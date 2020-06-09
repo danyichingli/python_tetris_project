@@ -6,7 +6,7 @@ import pygame as pg
 import sys
 
 # Global Variables
-FPS = 30
+FPS = 15
 WIDTH = 480
 HEIGHT = 640
 
@@ -27,77 +27,85 @@ class Window:
 class Block(pg.sprite.Sprite):
     def __init__ (self, block):
         super().__init__()
-        self.movex = 0                      # X movement
-        self.movey = 0                      # Y movement
-        self.image = block                  # Sprite image
-        self.frame = 0                      # Frame counter
-        self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
+        self.movex = 0                              # X movement
+        self.movey = 0                              # Y movement
+        self.image = block                          # Sprite image for block
+        self.frame = 0                              # Frame counter
+        self.rect = self.image.get_rect()           # Get xy dimensions of image
+        self.rect.center = (WIDTH / 2, HEIGHT / 2)  # FOR TESTING PURPOSES
+        self.finish = False
 
-    def control (self, x, y):
-        self.movex += x
-        self.movey += y
+    def control (self):
+        keyval = pg.key.get_pressed()
+        if keyval[pg.K_LEFT] or keyval[pg.K_a]:
+            print("left")
+            self.movex = -20
+        if keyval[pg.K_RIGHT] or keyval[pg.K_d]:
+            print("right")
+            self.movex = 20
+        if keyval[pg.K_UP] or keyval[pg.K_w]:
+            # TODO: Change for rotation
+            print("up")
+            self.movey = -20
+        if keyval[pg.K_DOWN] or keyval[pg.K_s]:
+            print("down")
+            self.movey = HEIGHT
 
     def update (self):
+        # Get movement
+        self.control()
+
+        # Drop (Down) movement
+        # TODO: Change for condition for dropping on top of other blocks
+        if self.rect.bottom == HEIGHT:
+            self.finish = True
+
         # Left/Right movement
-        self.rect.x += self.movex
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
-        if self.rect.left < 0:
-            self.rect.left = 0
-
-        # Up/Down movement
-        self.rect.y += self.movey
-        self.rect.y += 10
-        print(self.rect.y)
-        if self.rect.bottom > HEIGHT:
-            self.rect.bottom = HEIGHT
-        if self.rect.top < 0:
-            self.rect.top = 0
-
-        # Move left
+        # TODO: Rotate (Up) movement
+        else:
+            print(self.rect.bottom, HEIGHT)
+            self.rect.x += self.movex
+            if self.rect.right > WIDTH:
+                self.rect.right = WIDTH
+            if self.rect.left < 0:
+                self.rect.left = 0
+            self.rect.y += self.movey
+            if self.rect.bottom > HEIGHT:
+                self.rect.bottom = HEIGHT
+        # Reset movement
+        self.movex = self.movey = 0
 
 # Main
-win = Window(WIDTH, HEIGHT)
-screen = win.window_display()
-image = pg.image.load(os.path.join('sprites', 'o-block.png')).convert_alpha()
-pg.display.flip()
-block = Block(image)
-blocks = pg.sprite.Group()
-blocks.add(block)
-clock =  pg.time.Clock()
-running = True
-while running:
-    clock.tick(FPS)
+def main ():
+    win = Window(WIDTH, HEIGHT)
+    screen = win.window_display()
+    image = pg.image.load(os.path.join('sprites', 'o-block.png')).convert_alpha()
 
-    # Events
-    for event in pg.event.get():
+    block = Block(image)
+    blocks = pg.sprite.Group()
+    blocks.add(block)
 
-        # Quit
-        if event.type == pg.QUIT:
-            running = False
+    clock =  pg.time.Clock()
+    done = False
 
-        # Movement (print statements for testing)
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_LEFT or event.key == ord('a'):
-                print('left')
-            if event.key == pg.K_RIGHT or event.key == ord('d'):
-                print('right')
-            if event.key == pg.K_UP or event.key == ord('w'):
-                print('up')
-            if event.key == pg.K_DOWN or event.key == ord('s'):
-                print('down')
+    while not done:
+        # Pygame loop speed
+        clock.tick(FPS)
 
-        if event.type == pg.KEYUP:
-            if event.key == pg.K_ESCAPE:
-                pg.quit()
-                sys.exit()
-                running = False
-    # Update
-    blocks.update()
+        # Events
+        for event in pg.event.get():
 
-    # Draw/Render
-    screen.fill(BLACK)
-    blocks.draw(screen)
+            # Quit
+            if event.type == pg.QUIT:
+                done = True
 
-    pg.display.flip()
+        # Update
+        blocks.update()
+
+        # Draw/Render
+        screen.fill(BLACK)
+        blocks.draw(screen)
+
+        pg.display.flip()
+    pg.quit()
+main()
