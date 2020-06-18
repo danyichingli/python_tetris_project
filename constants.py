@@ -2,6 +2,8 @@
 FPS = 15
 WINDOW_WIDTH = 300
 WINDOW_HEIGHT = 600
+COLUMN_COUNT = 10
+ROW_COUNT = 22
 
 # RGB
 BLACK   = (0, 0, 0)
@@ -17,14 +19,11 @@ RED     = (255, 0, 0)
 # Tetris blocks
 O_SHAPE = [[1,1],
            [1,1]]
-I_SHAPE = [[1],
-           [1],
-           [1],
-           [1]]
-L_SHAPE = [[1,1,1],
-           [1,0,0]]
-J_SHAPE = [[1,1,1],
-           [0,0,1]]
+I_SHAPE = [[1,1,1,1]]
+L_SHAPE = [[1,0,0],
+           [1,1,1]]
+J_SHAPE = [[0,0,1],
+           [1,1,1]]
 T_SHAPE = [[1,1,1],
            [0,1,0]]
 S_SHAPE = [[1,1,0],

@@ -6,13 +6,38 @@ import pygame as pg
 import sys
 from constants import *
 
-def grid (screen):
-    blockSize = 30 # Set the size of the grid block
-    for x in range(10):
-        for y in range(20):
-            rect = pg.Rect(x*blockSize, y*blockSize,
-                               blockSize, blockSize)
+def new_grid (screen, columns, rows, blockSize):
+    for column in range(columns):
+        for row in range(rows):
+            rect = pg.Rect(column*blockSize, row*blockSize,
+                            blockSize, blockSize)
             pg.draw.rect(screen, WHITE, rect, 1)
+def new_board ():
+    # Create board of 0's with the same shape as the grid.
+    board = [[0 for column in range(COLUMN_COUNT)] for row in range(ROW_COUNT)]
+    # Bottom border for collision check.
+    board += [[1 for column in range(COLUMN_COUNT)]]
+    return board
+
+# Check collision between blocks. This should signal game over if True.
+def check_collision ():
+    return
+
+# Drop block down on top of bottom or another block (matrix).
+def drop_block ():
+    return
+
+# Rotate block counter or clockwise. If it collides, then don't rotate.
+def rotate_block ():
+    return
+
+# Move block left or right. Block should be bounded within grid.
+def move_block ():
+    return
+
+# Remove row from grid if filled. Move everything above row down by 1 row.
+def remove_row ():
+    return
 
 # Main
 def main ():
@@ -20,11 +45,12 @@ def main ():
     done = False
     screen = pg.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     screen.fill(BLACK)
+    new_grid(screen, COLUMN_COUNT, ROW_COUNT, 30)
     while not done:
         # Pygame loop speed
         clock.tick(FPS)
 
-        grid(screen)
+        new_grid(screen, COLUMN_COUNT, ROW_COUNT, 30)
 
         # Events
         for event in pg.event.get():
