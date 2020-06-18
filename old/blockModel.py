@@ -1,4 +1,5 @@
 import pygame as pg
+from blockController import BlockController
 from constants import *
 
 # Block class
@@ -13,26 +14,10 @@ class Block(pg.sprite.Sprite):
         self.rect.center = (WIDTH / 2, HEIGHT / 2)  # FOR TESTING PURPOSES
         self.finish = False
 
-    def control (self):
-        keyval = pg.key.get_pressed()
-        if keyval[pg.K_LEFT] or keyval[pg.K_a]:
-            print("left")
-            self.movex = -20
-        if keyval[pg.K_RIGHT] or keyval[pg.K_d]:
-            print("right")
-            self.movex = 20
-        if keyval[pg.K_UP] or keyval[pg.K_w]:
-            # TODO: Change for rotation
-            print("up")
-            self.movey = -20
-        if keyval[pg.K_DOWN] or keyval[pg.K_s]:
-            print("down")
-            self.movey = HEIGHT
 
     def update (self):
         # Get movement
-        self.control()
-
+        BlockController(self).control(20)
         # Drop (Down) movement
         # TODO: Change for condition for dropping on top of other blocks
         if self.rect.bottom == HEIGHT:
