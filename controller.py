@@ -5,41 +5,27 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame as pg
 import sys
 from constants import *
-from blockModel import Block
-from blockController import BlockController
-from window import Window
 
-# Main
-def main ():
-    win = Window(WIDTH, HEIGHT)
-    screen = win.window_display()
-    image = pg.image.load(os.path.join('sprites', 'o-block.png')).convert_alpha()
+def move_left(grid, row, col):
+    new_grid = grid
+    new_grid[row][col] = 0
+    new_grid[row][col-1] = 1
+    return new_grid, row, col-1
 
-    block = Block(image)
-    blocks = pg.sprite.Group()
-    blocks.add(block)
+def move_right(grid, row, col):
+    new_grid = grid
+    new_grid[row][col] = 0
+    new_grid[row][col+1] = 1
+    return new_grid, row, col+1
 
-    clock =  pg.time.Clock()
-    done = False
+# Drop block down on top of bottom or another block (matrix).
+def drop_block ():
+    return
 
-    while not done:
-        # Pygame loop speed
-        clock.tick(FPS)
+# Rotate block counter or clockwise. If it collides, then don't rotate.
+def rotate_block ():
+    return
 
-        # Events
-        for event in pg.event.get():
-
-            # Quit
-            if event.type == pg.QUIT:
-                done = True
-
-        # Update
-        blocks.update()
-
-        # Draw/Render
-        screen.fill(BLACK)
-        blocks.draw(screen)
-
-        pg.display.flip()
-    pg.quit()
-main()
+# Check collision between blocks. This should signal game over if True.
+def check_collision ():
+    return
