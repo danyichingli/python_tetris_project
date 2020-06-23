@@ -6,30 +6,47 @@ from controller import Controller
 from constants import *
 
 class GameData:
+    def __init__ (self):
+        self.curr_block = None
+        self.next_block = None
+        self.grid = []
 
-    # Initialially 2 random blocks are chosen. After the current block has been
-    # cemented, the next block becomes the current, and a randomly chosen block
-    # becomes the next.
-    def block_queue (self, old_queue):
-        new_queue = [None, None]
+    def get_curr_block (self):
+        return self.curr_block
+
+    def set_curr_block (self, block):
+        self.curr_block = block
+
+    def get_next_block (self):
+        return self.next_block
+
+    def set_next_block (self, block):
+        self.next_block = block
+
+    def block_generate (self):
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
         # Current block
-        if old_queue[0] == None:
-            new_queue[0] = Block(rand.choice(block_list))
+        if self.curr_block == None:
+            self.curr_block = (Block(rand.choice(block_list)))
         else:
-            new_queue[0] = old_queue[1]
+            self.curr_block = self.next_block
         # Next block
-        new_queue[1] = Block(rand.choice(block_list))
-        return new_queue
+        self.next_block = (Block(rand.choice(block_list)))
 
     # Load block into game where the top-left part of block is placed at (0,4)
-    def block_load (self, grid):
-        new_grid = grid
-        # Testing. Also representing top-left placement for block.
-        new_grid[0][4] = 1
-        return new_grid
+    def block_load (self):
+        # Testing. Currently representing top-left placement for block.
+        # TODO: Load full tetris blocks based on their shape
+        self.grid[0][4] = self.curr_block.val
 
     # Block will move left, move right, drop, or rotate
-    def block_move (self, grid, row, col):
-        control = Controller(grid, row, col)
-        return control.movement()
+    def block_move (self):
+        control = Controller(self.grid, self.curr_block)
+        self.grid, self.curr_block.row, self.curr_block.col = control.movement()
+
+    def grid_generate (self):
+        # Create board of 0's with the same shape as the grid.
+        grid = [[0 for column in range(COLUMN_COUNT)] for row in range(ROW_COUNT)]
+        # Bottom border for collision check.
+        grid += [[1 for column in range(COLUMN_COUNT)]]
+        self.grid = grid

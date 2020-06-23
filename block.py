@@ -8,20 +8,21 @@ class Block:
         self.template = template            # 'O', 'I', 'L', 'J', 'T', 'S', 'Z'
         self.shape = templates[template][0] # Shape
         self.color = templates[template][1] # Color asssociated with shape
-        self.x = 0
-        self.y = 4
+        self.val = templates[template][2]   # Value on grid to identify color
+        self.row = 0
+        self.col = 4
 
     def get_color(self):
         return self.color
 
-    def get_x (self):
-        return self.x
+    def get_row (self):
+        return self.row
 
-    def set_x (self, x):
-        self.x = x
+    def set_row (self, row):
+        self.row = row
 
-    def get_y (self):
-        return self.y
+    def get_col (self):
+        return self.col
 
-    def set_y (self, y):
-        self.y = y
+    def set_col (self, col):
+        self.col = col
