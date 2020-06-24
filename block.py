@@ -9,8 +9,8 @@ class Block:
         self.shape = templates[template][0] # Shape
         self.color = templates[template][1] # Color asssociated with shape
         self.val = templates[template][2]   # Value on grid to identify color
-        self.row = 0
-        self.col = 4
+        self.pos = self.shape
+        self.dropped = False
 
     def get_color(self):
         return self.color

@@ -11,7 +11,7 @@ class Window:
     def draw (self, gd):
         for column in range(COLUMN_COUNT):
             for row in range(ROW_COUNT):
-                color = WHITE
+                color = GREY
                 if gd.grid[row][column] > 0:
                     color = gd.curr_block.get_color()
                 rect = pg.Rect(GRID_BLOCK * column + GRID_BLOCK_MARGIN,

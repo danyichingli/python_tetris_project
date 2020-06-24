@@ -23,6 +23,12 @@ class GameData:
     def set_next_block (self, block):
         self.next_block = block
 
+    def get_grid (self):
+        return self.grid
+
+    def set_grid (self, grid):
+        self.grid = grid
+
     def block_generate (self):
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
         # Current block
@@ -37,12 +43,14 @@ class GameData:
     def block_load (self):
         # Testing. Currently representing top-left placement for block.
         # TODO: Load full tetris blocks based on their shape
-        self.grid[0][4] = self.curr_block.val
+        #self.grid[0][4] = self.curr_block.val
+        for i in self.curr_block.shape:
+            self.grid[i[0]][i[1]] = self.curr_block.val
 
     # Block will move left, move right, drop, or rotate
     def block_move (self):
         control = Controller(self.grid, self.curr_block)
-        self.grid, self.curr_block.row, self.curr_block.col = control.movement()
+        self.grid = control.movement()
 
     def grid_generate (self):
         # Create board of 0's with the same shape as the grid.
