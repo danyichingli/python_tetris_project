@@ -21,6 +21,9 @@ class Tetris:
             window.screen.fill(BLACK)
 
             # Update
+            if gd.curr_block.dropped:
+                gd.block_generate()
+                gd.block_load()
             gd.block_move()
 
             # Draw

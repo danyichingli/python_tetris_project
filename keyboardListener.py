@@ -12,7 +12,7 @@ class KeyboardListener:
         if keyval[pg.K_RIGHT] or keyval[pg.K_d]:
             return "right"
 
-        if keyval[pg.K_DOWN] or keyval[pg.K_s]:
+        if keyval[pg.K_UP] or keyval[pg.K_w]:
             return "up"
 
         if keyval[pg.K_DOWN] or keyval[pg.K_s]:

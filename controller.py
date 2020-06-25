@@ -42,19 +42,34 @@ class Controller:
         new_grid = self.grid
         curr_pos = self.block.pos
         next_pos = curr_pos
-        hit = False
-        while True:
-            # Check for hit
-            hit = self.block_collision()
-            if hit:
-                for i in range(4):
-                    row = curr_pos[i][0]
-                    col = curr_pos[i][1]
-                    new_grid[row][col] = self.block.val
-                break
-            for i in range(4):
-                curr_pos[i] = (row+1, col)
-        return
+        # Leftmost column
+        leftmost = min(self.block.pos, key=lambda x:x[1])[1]
+        # Rightmost column
+        rightmost = max(self.block.pos, key=lambda x:x[1])[1]
+        # Closest part of block near the bottom for collision
+        botmost = max(self.block.pos, key=lambda x:x[0])[0]
+        # Closest row on grid near the bottom for collision
+        topmost = 0
+        print("test")
+        print(self.block.pos)
+        for i, row in enumerate(new_grid):
+            if i >= botmost+1:
+                row = row[leftmost:rightmost+1]
+                if not all(j == 0 for j in row):
+                    topmost = i
+                    break
+        dist = self.drop_dist(botmost, topmost+1)
+        for i in range(4):
+            row = self.block.pos[i][0]
+            col = self.block.pos[i][1]
+            self.block.pos[i] = (row+dist, col)
+            new_grid[row][col] = 0
+            new_grid[row+dist][col] = self.block.val
+        print(dist)
+        print(self.block.pos)
+        print(botmost+1, topmost+1)
+        self.block.dropped = True
+        return new_grid
 
     # TODO: Rotate
     # Rotate block counter or clockwise. If it collides, then don't rotate.
@@ -94,3 +109,11 @@ class Controller:
             if temp_grid[row+1][col] > 0:
                 return True
         return False
+
+    def drop_dist (self, row1, row2):
+        # row1 = lowest row for block pos
+        # row2 = highest row on grid that has a row filled in
+        if row2 > 19:
+            return 19 - row1
+
+        return row2 - row1
