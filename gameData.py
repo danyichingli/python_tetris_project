@@ -48,13 +48,17 @@ class GameData:
             self.grid[i[0]][i[1]] = self.curr_block.val
 
     # Block will move left, move right, drop, or rotate
-    def block_move (self):
+    def get_events (self):
         control = Controller(self.grid, self.curr_block)
-        self.grid = control.movement()
+        self.grid = control.event_listener()
+        if self.curr_block.dropped:
+            print(self.curr_block.template, self.next_block.template)
+            self.block_generate()
+            self.block_load()
 
     def grid_generate (self):
         # Create board of 0's with the same shape as the grid.
         grid = [[0 for column in range(COLUMN_COUNT)] for row in range(ROW_COUNT)]
         # Bottom border for collision check.
-        grid += [[1 for column in range(COLUMN_COUNT)]]
+        #grid += [[1 for column in range(COLUMN_COUNT)]]
         self.grid = grid

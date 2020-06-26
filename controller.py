@@ -50,25 +50,27 @@ class Controller:
         botmost = max(self.block.pos, key=lambda x:x[0])[0]
         # Closest row on grid near the bottom for collision
         topmost = 0
-        print("test")
-        print(self.block.pos)
+        # print("---TEST---")
+        # print(self.block.pos)
         for i, row in enumerate(new_grid):
-            if i >= botmost+1:
+            if i == 19:
+                topmost = i
+            elif i >= botmost+1:
                 row = row[leftmost:rightmost+1]
                 if not all(j == 0 for j in row):
-                    topmost = i
+                    print(i,row)
+                    topmost = i - 1
+                    print(topmost,botmost)
                     break
-        dist = self.drop_dist(botmost, topmost+1)
+        dist = self.drop_dist(botmost, topmost)
         for i in range(4):
             row = self.block.pos[i][0]
             col = self.block.pos[i][1]
             self.block.pos[i] = (row+dist, col)
             new_grid[row][col] = 0
             new_grid[row+dist][col] = self.block.val
-        print(dist)
-        print(self.block.pos)
-        print(botmost+1, topmost+1)
-        self.block.dropped = True
+        # print(self.block.pos)
+        # print(botmost+1, topmost+1)
         return new_grid
 
     # TODO: Rotate
@@ -76,16 +78,16 @@ class Controller:
     def rotate_block ():
         return
 
-    # L/R movement: detects collision with walls.
-    # Drop: ???
-    # Rotation: ???
-    def movement (self):
-        kl = KeyboardListener()
-        if kl.listener() == "left" and self.wall_collision("left"):
+    def event_listener (self):
+        event = KeyboardListener().listener()
+        if event == "quit":
+            pg.quit()
+        elif event == "left" and self.wall_collision("left"):
             return self.move_left()
-        if kl.listener() == "right" and self.wall_collision("right"):
+        elif event == "right" and self.wall_collision("right"):
             return self.move_right()
-        if kl.listener() == "down":
+        elif event == "down":
+            self.block.dropped = True
             return self.drop_block()
         return self.grid
 

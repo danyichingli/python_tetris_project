@@ -21,19 +21,9 @@ class Tetris:
             window.screen.fill(BLACK)
 
             # Update
-            if gd.curr_block.dropped:
-                gd.block_generate()
-                gd.block_load()
-            gd.block_move()
+            gd.get_events()
 
             # Draw
             window.draw(gd)
-
-            # Events
-            for event in pg.event.get():
-
-                # Quit
-                if event.type == pg.QUIT:
-                    window.is_running = False
             pg.display.flip()
         pg.quit()
