@@ -1,9 +1,9 @@
 import pygame as pg
 import random as rand
 import sys
+import constants as c
 from block import Block
 from controller import Controller
-from constants import *
 
 class GameData:
     def __init__ (self):
@@ -30,20 +30,21 @@ class GameData:
         self.grid = grid
 
     def block_generate (self):
-        block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
-        # Current block
-        if self.curr_block == None:
-            self.curr_block = (Block(rand.choice(block_list)))
-        else:
-            self.curr_block = self.next_block
-        # Next block
-        self.next_block = (Block(rand.choice(block_list)))
+        # block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
+        # # Current block
+        # if self.curr_block == None:
+        #     self.curr_block = (Block(rand.choice(block_list)))
+        # else:
+        #     self.curr_block = self.next_block
+        # # Next block
+        # self.next_block = (Block(rand.choice(block_list)))
 
+        # ----TESTING----
+        self.curr_block = Block('O')
+        self.next_block = Block('O')
     # Load block into game where the top-left part of block is placed at (0,4)
     def block_load (self):
-        # Testing. Currently representing top-left placement for block.
-        # TODO: Load full tetris blocks based on their shape
-        #self.grid[0][4] = self.curr_block.val
+        self.block_generate()
         for i in self.curr_block.shape:
             self.grid[i[0]][i[1]] = self.curr_block.val
 
@@ -52,13 +53,13 @@ class GameData:
         control = Controller(self.grid, self.curr_block)
         self.grid = control.event_listener()
         if self.curr_block.dropped:
-            print(self.curr_block.template, self.next_block.template)
-            self.block_generate()
+            # print(self.curr_block.template, self.next_block.template)
             self.block_load()
 
     def grid_generate (self):
         # Create board of 0's with the same shape as the grid.
-        grid = [[0 for column in range(COLUMN_COUNT)] for row in range(ROW_COUNT)]
+        grid = [[0 for column in range(c.COLUMN_COUNT)]
+                    for row in range(c.ROW_COUNT)]
         # Bottom border for collision check.
         #grid += [[1 for column in range(COLUMN_COUNT)]]
         self.grid = grid

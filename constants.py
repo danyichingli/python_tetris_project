@@ -1,4 +1,4 @@
-FPS = 15
+FPS = 30
 # Grid block dimensions
 GRID_BLOCK_SIZE = 30
 GRID_BLOCK_MARGIN = 5

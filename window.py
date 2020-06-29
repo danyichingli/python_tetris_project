@@ -1,36 +1,36 @@
 import pygame as pg
 import sys
+import constants as c
 from gameData import GameData
-from constants import *
 
 class Window:
     def __init__ (self):
-        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        self.screen = pg.display.set_mode((c.WIDTH, c.HEIGHT))
         self.is_running = True
 
     def draw (self, gd):
-        for col in range(COLUMN_COUNT):
-            for row in range(ROW_COUNT):
-                color = GREY
+        for col in range(c.COLUMN_COUNT):
+            for row in range(c.ROW_COUNT):
+                color = c.GREY
                 if gd.grid[row][col] > 0:
                     color = self.color(gd.grid[row][col])
-                rect = pg.Rect(GRID_BLOCK * col + GRID_BLOCK_MARGIN,
-                               GRID_BLOCK * row + GRID_BLOCK_MARGIN,
-                                GRID_BLOCK_SIZE, GRID_BLOCK_SIZE)
+                rect = pg.Rect(c.GRID_BLOCK * col + c.GRID_BLOCK_MARGIN,
+                               c.GRID_BLOCK * row + c.GRID_BLOCK_MARGIN,
+                                c.GRID_BLOCK_SIZE, c.GRID_BLOCK_SIZE)
                 pg.draw.rect(self.screen, color, rect)
 
     def color (self, val):
         if val == 1:
-            return YELLOW
+            return c.YELLOW
         elif val == 2:
-            return CYAN
+            return c.CYAN
         elif val == 3:
-            return ORANGE
+            return c.ORANGE
         elif val == 4:
-            return BLUE
+            return c.BLUE
         elif val == 5:
-            return PURPLE
+            return c.PURPLE
         elif val == 6:
-            return GREEN
+            return c.GREEN
         else:
-            return RED
+            return c.RED

@@ -1,11 +1,7 @@
-# Removes "Hello from the pygame community" message.
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-
 import pygame as pg
 import sys
+import constants as c
 from keyboardListener import KeyboardListener
-from constants import *
 
 class Controller:
     def __init__ (self, grid, block):
@@ -41,36 +37,56 @@ class Controller:
     def drop_block (self):
         new_grid = self.grid
         curr_pos = self.block.pos
-        next_pos = curr_pos
-        # Leftmost column
+        # Leftmost column limit for block
         leftmost = min(self.block.pos, key=lambda x:x[1])[1]
-        # Rightmost column
+        # Rightmost column limit for block
         rightmost = max(self.block.pos, key=lambda x:x[1])[1]
-        # Closest part of block near the bottom for collision
-        botmost = max(self.block.pos, key=lambda x:x[0])[0]
-        # Closest row on grid near the bottom for collision
-        topmost = 0
-        # print("---TEST---")
-        # print(self.block.pos)
-        for i, row in enumerate(new_grid):
-            if i == 19:
-                topmost = i
-            elif i >= botmost+1:
-                row = row[leftmost:rightmost+1]
-                if not all(j == 0 for j in row):
-                    print(i,row)
-                    topmost = i - 1
-                    print(topmost,botmost)
-                    break
-        dist = self.drop_dist(botmost, topmost)
+        # Bottom of row of the block
+        upper_lim = max(self.block.pos, key=lambda x:x[0])[0]
+        # First row down on the grid that's not filled with 0's
+        lower_lim = 0
+        # Last row on the grid
+        bottom = c.ROW_COUNT-1
+        # Distance from block to collision
+        dist = 0
+        for grid_row in range(upper_lim+1, bottom+1):
+            row = new_grid[grid_row]
+            margin = row[leftmost:rightmost+1]
+            # If the block can drop straight to the bottom
+            if grid_row == bottom and all(i == 0 for i in margin):
+                dist = self.drop_dist(upper_lim, bottom)
+            else:
+                # If there's above the bottom
+                if not all(j == 0 for j in margin):
+                    # If it falls onto a flat surface
+                    if 0 not in margin:
+                        lower_lim = grid_row - 1
+                        dist = self.drop_dist(upper_lim, lower_lim)
+                        break
+                    # If there's an opening
+                    else:
+                        grid_row_limit = {col:row[col]
+                                        for col in range(leftmost, rightmost+1)}
+                        min_dist = bottom
+                        for k in range(4):
+                            block_row = self.block.pos[k][0]
+                            block_col = self.block.pos[k][1]
+                            if grid_row_limit[block_col] == 0:
+                                temp_dist = self.drop_dist(block_row, grid_row)
+                                if temp_dist < min_dist:
+                                    min_dist = temp_dist
+                            else:
+                                temp_dist = self.drop_dist(block_row, grid_row-1)
+                                if temp_dist < min_dist:
+                                    min_dist = temp_dist
+                        dist = min_dist
+                        break
         for i in range(4):
             row = self.block.pos[i][0]
             col = self.block.pos[i][1]
             self.block.pos[i] = (row+dist, col)
             new_grid[row][col] = 0
             new_grid[row+dist][col] = self.block.val
-        # print(self.block.pos)
-        # print(botmost+1, topmost+1)
         return new_grid
 
     # TODO: Rotate
@@ -115,7 +131,5 @@ class Controller:
     def drop_dist (self, row1, row2):
         # row1 = lowest row for block pos
         # row2 = highest row on grid that has a row filled in
-        if row2 > 19:
-            return 19 - row1
 
         return row2 - row1
