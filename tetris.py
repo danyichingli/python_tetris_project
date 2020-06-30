@@ -9,6 +9,8 @@ class Tetris:
         # Objects
         window = Window()
         gd = GameData()
+        # Pygame
+        window.pygame_init()
         # Grid
         gd.grid_generate()
         # Blocks
@@ -21,7 +23,6 @@ class Tetris:
 
             # Update
             gd.get_events()
-            print(c.O_SHAPE)
 
             # Draw
             window.draw(gd)
