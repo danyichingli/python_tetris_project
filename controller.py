@@ -1,11 +1,7 @@
-# Removes "Hello from the pygame community" message.
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-
 import pygame as pg
 import sys
+import constants as c
 from keyboardListener import KeyboardListener
-from constants import *
 
 class Controller:
     def __init__ (self, grid, block):
@@ -41,36 +37,73 @@ class Controller:
     def drop_block (self):
         new_grid = self.grid
         curr_pos = self.block.pos
-        next_pos = curr_pos
-        hit = False
-        while True:
-            # Check for hit
-            hit = self.block_collision()
-            if hit:
-                for i in range(4):
-                    row = curr_pos[i][0]
-                    col = curr_pos[i][1]
-                    new_grid[row][col] = self.block.val
-                break
-            for i in range(4):
-                curr_pos[i] = (row+1, col)
-        return
+        # Leftmost column limit for block
+        leftmost = min(self.block.pos, key=lambda x:x[1])[1]
+        # Rightmost column limit for block
+        rightmost = max(self.block.pos, key=lambda x:x[1])[1]
+        # Bottom of row of the block
+        upper_lim = max(self.block.pos, key=lambda x:x[0])[0]
+        # First row down on the grid that's not filled with 0's
+        lower_lim = 0
+        # Last row on the grid
+        bottom = c.ROW_COUNT-1
+        # Distance from block to collision
+        dist = 0
+        for grid_row in range(upper_lim+1, bottom+1):
+            row = new_grid[grid_row]
+            margin = row[leftmost:rightmost+1]
+            # If the block can drop straight to the bottom
+            if grid_row == bottom and all(i == 0 for i in margin):
+                dist = self.drop_dist(upper_lim, bottom)
+            else:
+                # If there's above the bottom
+                if not all(j == 0 for j in margin):
+                    # If it falls onto a flat surface
+                    if 0 not in margin:
+                        lower_lim = grid_row - 1
+                        dist = self.drop_dist(upper_lim, lower_lim)
+                        break
+                    # If there's an opening
+                    else:
+                        grid_row_limit = {col:row[col]
+                                        for col in range(leftmost, rightmost+1)}
+                        min_dist = bottom
+                        for k in range(4):
+                            block_row = self.block.pos[k][0]
+                            block_col = self.block.pos[k][1]
+                            if grid_row_limit[block_col] == 0:
+                                temp_dist = self.drop_dist(block_row, grid_row)
+                                if temp_dist < min_dist:
+                                    min_dist = temp_dist
+                            else:
+                                temp_dist = self.drop_dist(block_row, grid_row-1)
+                                if temp_dist < min_dist:
+                                    min_dist = temp_dist
+                        dist = min_dist
+                        break
+        for i in range(4):
+            row = self.block.pos[i][0]
+            col = self.block.pos[i][1]
+            self.block.pos[i] = (row+dist, col)
+            new_grid[row][col] = 0
+            new_grid[row+dist][col] = self.block.val
+        return new_grid
 
     # TODO: Rotate
     # Rotate block counter or clockwise. If it collides, then don't rotate.
     def rotate_block ():
         return
 
-    # L/R movement: detects collision with walls.
-    # Drop: ???
-    # Rotation: ???
-    def movement (self):
-        kl = KeyboardListener()
-        if kl.listener() == "left" and self.wall_collision("left"):
+    def event_listener (self):
+        event = KeyboardListener().listener()
+        if event == "quit":
+            pg.quit()
+        elif event == "left" and self.wall_collision("left"):
             return self.move_left()
-        if kl.listener() == "right" and self.wall_collision("right"):
+        elif event == "right" and self.wall_collision("right"):
             return self.move_right()
-        if kl.listener() == "down":
+        elif event == "down":
+            self.block.dropped = True
             return self.drop_block()
         return self.grid
 
@@ -94,3 +127,9 @@ class Controller:
             if temp_grid[row+1][col] > 0:
                 return True
         return False
+
+    def drop_dist (self, row1, row2):
+        # row1 = lowest row for block pos
+        # row2 = highest row on grid that has a row filled in
+
+        return row2 - row1

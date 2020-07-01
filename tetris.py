@@ -1,36 +1,30 @@
 import pygame as pg
 import sys
+import constants as c
 from window import Window
 from gameData import GameData
-from constants import *
 
 class Tetris:
     def run (self):
         # Objects
         window = Window()
         gd = GameData()
-        # Blocks
-        gd.block_generate()
+        # Pygame
+        window.pygame_init()
         # Grid
         gd.grid_generate()
+        # Blocks
         gd.block_load()
 
         while window.is_running:
             # Pygame loop speed
-            pg.time.Clock().tick(FPS)
-            window.screen.fill(BLACK)
+            pg.time.Clock().tick(c.FPS)
+            window.screen.fill(c.BLACK)
 
             # Update
-            gd.block_move()
+            gd.get_events()
 
             # Draw
             window.draw(gd)
-
-            # Events
-            for event in pg.event.get():
-
-                # Quit
-                if event.type == pg.QUIT:
-                    window.is_running = False
             pg.display.flip()
         pg.quit()
