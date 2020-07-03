@@ -1,4 +1,4 @@
-FPS = 30
+FPS = 60
 # Grid block dimensions
 SQUARE_SIZE = 30
 SQUARE_MARGIN = 5

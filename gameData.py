@@ -1,6 +1,5 @@
 import pygame as pg
 import random as rand
-import sys
 import constants as c
 from block import Block
 
@@ -14,7 +13,6 @@ class GameData:
         self.clock = pg.time.Clock()
         self.fall_time = 0
         self.fall_speed = 0.27
-        self.level_time = 0
 
     def get_curr_block (self):
         return self.curr_block
@@ -50,19 +48,16 @@ class GameData:
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
         # Current block
         if self.curr_block == None:
-            self.set_curr_block(Block(rand.choice(block_list)))
-            self.curr_block.clone()
+            self.set_curr_block(Block(rand.choice(block_list)).clone())
         else:
-            self.set_curr_block(Block(self.next_block.template))
-            self.curr_block.clone()
+            self.set_curr_block(Block(self.next_block.template).clone())
         # Next block
-        self.set_next_block(Block(rand.choice(block_list)))
-        self.next_block.clone()
+        self.set_next_block(Block(rand.choice(block_list)).clone())
         # ---TESTING---
         # self.set_curr_block(Block('O'))
-        # self.curr_block.clone()
+        # self.set_curr_block(self.curr_block.clone())
         # self.set_next_block(Block('O'))
-        # self.next_block.clone()
+        # self.set_next_block(self.next_block.clone())
 
     def grid_generate (self):
         # Create a grid with color other than black.
