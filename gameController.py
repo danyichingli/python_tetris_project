@@ -2,7 +2,7 @@ import pygame as pg
 import constants as c
 from windowView import Window
 from gameData import GameData
-
+ 
 class Controller:
     def __init__ (self):
         self.gd = GameData()
