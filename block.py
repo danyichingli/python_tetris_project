@@ -1,67 +1,35 @@
 import pygame as pg
-import sys
 import constants as c
-from Blocks.O import O_Block
-from Blocks.I import I_Block
-from Blocks.L import L_Block
-from Blocks.J import J_Block
-from Blocks.T import T_Block
-from Blocks.S import S_Block
-from Blocks.Z import Z_Block
+from copy import deepcopy
 
 class Block:
 
     def __init__ (self, template):
-        self.template = template
-        self.shape = []             # Shape
-        self.color = ()             # Color asssociated with shape
-        self.val = 0                # Value on grid to identify color
-        self.pos = []               # Position on grid
-        self.dropped = False
+        # 'O', 'I', 'L', 'J', 'T', 'S', 'Z'
+        self.template           = template
+        # Positions on the grid
+        self.start_pos          = c.BLOCKS[self.template][0]
+        self.curr_pos           = c.BLOCKS[self.template][0]
+        # Color based on the template of block
+        self.color              = c.BLOCKS[self.template][1]
+        # Values for rotation functionality
+        self.rotation_states    = c.ROTATION[self.template]
+        self.curr_state         = 0
+        # If dropped, then use of this block is done
+        self.dropped            = False
 
     def get_color (self):
         return self.color
 
-    def create_block (self):
-        if self.template == 'O':
-            block = O_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        elif self.template == 'I':
-            block = I_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        elif self.template == 'L':
-            block = L_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        elif self.template == 'J':
-            block = J_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        elif self.template == 'T':
-            block = T_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        elif self.template == 'S':
-            block = S_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
-        else: # self.template == 'Z'
-            block = Z_Block()
-            self.shape = block.shape
-            self.color = block.color
-            self.val = block.val
-            self.pos = block.pos
+    def get_rotation_states (self):
+        return self.rotation_states
+
+    def get_curr_state (self):
+        return self.curr_state
+
+    def set_curr_state (self, new_state):
+        self.curr_state = new_state
+
+    def clone (self):
+        new_block = deepcopy(Block(self.template))
+        return new_block
