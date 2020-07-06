@@ -54,9 +54,9 @@ class GameData:
         # Next block
         self.set_next_block(Block(rand.choice(block_list)).clone())
         # ---TESTING---
-        # self.set_curr_block(Block('L'))
+        # self.set_curr_block(Block('O'))
         # self.set_curr_block(self.curr_block.clone())
-        # self.set_next_block(Block('T'))
+        # self.set_next_block(Block('O'))
         # self.set_next_block(self.next_block.clone())
 
     def grid_generate (self):
