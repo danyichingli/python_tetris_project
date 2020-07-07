@@ -1,7 +1,7 @@
 import pygame as pg
 import constants as c
 from copy import deepcopy
-
+ 
 class Block:
 
     def __init__ (self, template):

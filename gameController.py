@@ -2,8 +2,13 @@ import pygame as pg
 import constants as c
 from gameView import GameView
 from gameData import GameData
+<<<<<<< HEAD
 
 class GameController:
+=======
+ 
+class Controller:
+>>>>>>> 0e7fc2cb5fb556edf272aeae620ab15e6d80b6d5
     def __init__ (self):
         self.gd = GameData()
         self.gv = GameView()
