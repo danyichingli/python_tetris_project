@@ -1,8 +1,8 @@
-from gameController import Controller
+from gameController import GameController
 
 class Tetris:
     def run (self):
         # Objects
-        control = Controller()
+        control = GameController()
         # Game start
         control.game_loop()

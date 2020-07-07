@@ -3,7 +3,7 @@ import sys
 import constants as c
 from gameData import GameData
 
-class Window:
+class GameView:
     def __init__ (self):
         self.screen = pg.display.set_mode((c.WIDTH, c.HEIGHT))
 

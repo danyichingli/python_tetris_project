@@ -1,16 +1,16 @@
 import pygame as pg
 import constants as c
-from windowView import Window
+from gameView import GameView
 from gameData import GameData
 
-class Controller:
+class GameController:
     def __init__ (self):
         self.gd = GameData()
-        self.window = Window()
+        self.gv = GameView()
 
     """Game Execution"""
     def game_init (self):
-        self.window.pygame_init()
+        self.gv.pygame_init()
         self.gd.grid_generate()
         self.block_load()
         pg.mixer.init(44100, -16,2,2048)
@@ -28,11 +28,11 @@ class Controller:
             self.gd.fall_time += time
 
             # Update
-            self.window.screen.fill(c.BLACK)
+            self.gv.screen.fill(c.BLACK)
             self.update()
 
             # Draw
-            self.window.draw(self.gd)
+            self.gv.draw(self.gd)
             pg.display.flip()
         pg.quit()
 
@@ -79,12 +79,11 @@ class Controller:
 
     # Follows super rotation system. If it collides, then don't rotate.
     def rotate (self, direction):
-        # O-block doesn't rotate
+        # O-block doesn't need to rotate
         if self.gd.curr_block.rotation_states == None:
             return self.gd.grid
         # I-block, S-block, Z-block, L-block, J-block, T-block rotates 4 ways
         else:
-            # Check collision before committing rotation
             new_grid = self.gd.get_grid()
             curr_state = self.gd.curr_block.get_curr_state()
             next_state = curr_state
@@ -101,11 +100,36 @@ class Controller:
                     next_state -= 1
             curr_points = self.gd.curr_block.get_rotation_states()[curr_state]
             next_points = self.gd.curr_block.get_rotation_states()[next_state]
+            # Find the difference to transition from current to next state
             if direction == "clockwise":
                 diff = self.find_diff(direction, curr_points, next_points)
             else: # direction == "counter clockwise"
                 diff = self.find_diff(direction, next_points, curr_points)
+            # Check collision before committing rotation
+            leftmost = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+            rightmost = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+
+            # Wall kick if:
+            # I-block, current state is 1 or 3, and near either wall
+            # Current state is 1 and against left wall
+            # Current state is 3 and against right wall
+            if self.gd.curr_block.template == 'I':
+                if ((curr_state == 1 or curr_state == 3) and leftmost <= 1 and
+                not self.block_collision_h("right")):
+                    self.wall_kick_i("left", diff, curr_state)
+                elif ((curr_state == 1 or curr_state == 3) and rightmost >= 8 and
+                not self.block_collision_h("left")):
+                    self.wall_kick_i("right", diff, curr_state)
+            else:
+                if (curr_state == 1 and leftmost == 0 and
+                not self.block_collision_h("right")):
+                    self.wall_kick("left", diff)
+                elif (curr_state == 3 and rightmost == 9 and
+                not self.block_collision_h("left")):
+                    self.wall_kick("right", diff)
+
             if not self.block_collision_r(diff):
+                # Rotation
                 self.block_erase(new_grid)
                 for i in range(4):
                     row = self.gd.curr_block.curr_pos[i][0]
@@ -114,7 +138,7 @@ class Controller:
                     next_col = col + diff[i][1]
                     self.gd.curr_block.curr_pos[i] = (next_row, next_col)
                     new_grid[next_row][next_col] = self.gd.curr_block.color
-            self.gd.curr_block.set_curr_state(next_state)
+                self.gd.curr_block.set_curr_state(next_state)
             return new_grid
 
 
@@ -127,6 +151,7 @@ class Controller:
         if self.block_overlap():
             pg.quit()
 
+    # Block falls at a consistent speed depending on the level
     def block_fall (self):
         # default = 1000
         if self.gd.fall_time / 3500 > self.gd.fall_speed:
@@ -135,6 +160,37 @@ class Controller:
                 return self.soft_drop()
         return self.gd.grid
 
+    # Allows a block leaning against a wall to rotate when it should not
+    def wall_kick (self, wall, diff):
+        if wall == "left":
+            self.move("right")
+            if self.block_collision_r(diff):
+                self.move("left")
+        else:
+            self.move("left")
+            if self.block_collision_r(diff):
+                self.move("right")
+
+    # I-block is a unique case for wall kicking
+    def wall_kick_i (self, wall, diff, curr_state):
+        if wall == "left":
+            if curr_state == 3:
+                self.wall_kick(wall, diff)
+            else:
+                self.move("right")
+                self.move("right")
+                if self.block_collision_r(diff):
+                    self.move("left")
+                    self.move("left")
+        else:
+            if curr_state == 1:
+                self.wall_kick(wall, diff)
+            else:
+                self.move("left")
+                self.move("left")
+                if self.block_collision_r(diff):
+                    self.move("right")
+                    self.move("right")
 
     # Scoring based on original Nintendo scoring system
     def scoring (self, lines):
@@ -186,7 +242,7 @@ class Controller:
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
                     pg.quit()
-        self.block_fall()
+        #self.block_fall()
 
     def update (self):
         self.event_listener()
@@ -225,6 +281,7 @@ class Controller:
                 return True
         return False
 
+    # Check block collision before rotation
     def block_collision_r (self, diff):
         temp_grid = self.gd.get_grid()
         for i in range(4):
@@ -232,6 +289,8 @@ class Controller:
             row = pos[i][0] + diff[i][0]
             col = pos[i][1] + diff[i][1]
             if row < 0 or row > 19 or col < 0 or col > 9:
+                return True
+            if (row,col) not in pos and temp_grid[row][col] != c.GREY:
                 return True
         return False
 

@@ -45,19 +45,19 @@ class GameData:
         self.level += level
 
     def block_generate (self):
-        block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
-        # Current block
-        if self.curr_block == None: 
-            self.set_curr_block(Block(rand.choice(block_list)).clone())
-        else:
-            self.set_curr_block(Block(self.next_block.template).clone())
-        # Next block
-        self.set_next_block(Block(rand.choice(block_list)).clone())
+        # block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
+        # # Current block
+        # if self.curr_block == None:
+        #     self.set_curr_block(Block(rand.choice(block_list)).clone())
+        # else:
+        #     self.set_curr_block(Block(self.next_block.template).clone())
+        # # Next block
+        # self.set_next_block(Block(rand.choice(block_list)).clone())
         # ---TESTING---
-        # self.set_curr_block(Block('L'))
-        # self.set_curr_block(self.curr_block.clone())
-        # self.set_next_block(Block('T'))
-        # self.set_next_block(self.next_block.clone())
+        self.set_curr_block(Block('O'))
+        self.set_curr_block(self.curr_block.clone())
+        self.set_next_block(Block('O'))
+        self.set_next_block(self.next_block.clone())
 
     def grid_generate (self):
         # Create a grid with color other than black.
