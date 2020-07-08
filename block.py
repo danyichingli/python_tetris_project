@@ -1,12 +1,13 @@
 import pygame as pg
 import constants as c
 from copy import deepcopy
- 
+
 class Block:
 
     def __init__ (self, template):
         # 'O', 'I', 'L', 'J', 'T', 'S', 'Z'
         self.template           = template
+        self.shape              = c.SHAPES[self.template]
         # Positions on the grid
         self.start_pos          = c.BLOCKS[self.template][0]
         self.curr_pos           = c.BLOCKS[self.template][0]

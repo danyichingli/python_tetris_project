@@ -1,27 +1,30 @@
 import pygame as pg
 import constants as c
+import random as rand
 from gameView import GameView
 from gameData import GameData
-<<<<<<< HEAD
+from block import Block
 
 class GameController:
-=======
- 
-class Controller:
->>>>>>> 0e7fc2cb5fb556edf272aeae620ab15e6d80b6d5
     def __init__ (self):
         self.gd = GameData()
         self.gv = GameView()
 
     """Game Execution"""
     def game_init (self):
-        self.gv.pygame_init()
+        # Display init
+        pg.display.set_caption('Tetris')
+        icon = pg.image.load('Images/icon.png')
+        pg.display.set_icon(icon)
+        # Text init
+        pg.font.init()
+        # Game init
         self.gd.grid_generate()
-        self.block_load()
+        self.next_block_load()
+        # Mixer init
         pg.mixer.init(44100, -16,2,2048)
         pg.mixer.music.load('Music/Tetris.mp3')
-        # TODO: consider adding the lines below to a 'settings' or 'music' class
-        pg.mixer.music.set_volume(0.1)
+        pg.mixer.music.set_volume(0)
         pg.mixer.music.play(-1)
 
     def game_loop (self):
@@ -34,6 +37,7 @@ class Controller:
 
             # Update
             self.gv.screen.fill(c.BLACK)
+            self.gv.draw_tetris_UI(self.gd)
             self.update()
 
             # Draw
@@ -148,13 +152,45 @@ class Controller:
 
 
     """Automatic Changes"""
-    # Load block into game where the top-left part of block is placed at (0,4)
-    def block_load (self):
-        self.gd.block_generate()
+    def next_block_load (self):
+        self.next_block_generate()
 
         # Check if we can still load block without overlapping
         if self.block_overlap():
             pg.quit()
+
+    def next_block_generate (self):
+        block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
+        # Current block
+        if self.gd.curr_block == None:
+            self.gd.set_curr_block(Block(rand.choice(block_list)).clone())
+        else:
+            self.gd.set_curr_block(Block(self.gd.next_block.template).clone())
+        # Next block
+        self.gd.set_next_block(Block(rand.choice(block_list)).clone())
+        # # ---TESTING---
+        # self.set_curr_block(Block('O'))
+        # self.set_curr_block(self.curr_block.clone())
+        # self.set_next_block(Block('O'))
+        # self.set_next_block(self.next_block.clone())
+
+    def hold_block_load (self):
+        self.hold_block_generate()
+
+        # Check if we can still load block without overlapping
+        if self.block_overlap():
+            pg.quit()
+
+    def hold_block_generate (self):
+        if self.gd.hold_block == None:
+            self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
+            self.block_erase(self.gd.grid)
+            self.next_block_generate()
+        else:
+            temp_hold_block = self.gd.get_hold_block()
+            self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
+            self.block_erase(self.gd.grid)
+            self.gd.set_curr_block(temp_hold_block)
 
     # Block falls at a consistent speed depending on the level
     def block_fall (self):
@@ -240,20 +276,25 @@ class Controller:
                 # Hard drop (key press)
                 elif event.key == pg.K_SPACE and not self.block_collision_v():
                     self.hard_drop()
+                # Rotate clockwise (key press)
                 elif event.key == pg.K_x:
                     self.rotate("clockwise")
+                # Rotate counter-clockwise (key press)
                 elif event.key == pg.K_z:
                     self.rotate("counter clockwise")
+                # Hold block (key press)
+                elif event.key == pg.K_c:
+                    self.hold_block_load()
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
                     pg.quit()
-        #self.block_fall()
+        self.block_fall()
 
     def update (self):
         self.event_listener()
         if self.gd.curr_block.dropped:
             self.check_line_clear()
-            self.block_load()
+            self.next_block_load()
 
     """Conditions"""
     # Check block collision horizontally
