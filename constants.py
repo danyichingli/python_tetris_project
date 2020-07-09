@@ -23,6 +23,17 @@ PURPLE  = (128, 0, 128)
 GREEN   = (0, 255, 0)
 RED     = (255, 0, 0)
 
+# INSTRUCTIONS
+INSTRUCTIONS = ["Move Left:                 Left Arrow",
+                "Move Right:                Right Arrow",
+                "Rotate Clockwise:          X",
+                "Rotate Counter-Clockwise:  Z",
+                "Hold:                      C",
+                "Soft Drop:                 Down Arrow",
+                "Hard Drop:                 Spacebar",
+                "Pause/Unpause:             P",
+                "Close Game:                ESC"]
+
 # BLOCKS {template : (starting position, color)}
 BLOCKS = {
             'O':([(0,4),(0,5),(1,4),(1,5)], YELLOW),

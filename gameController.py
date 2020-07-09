@@ -12,6 +12,7 @@ class GameController:
 
     """Game Execution"""
     def game_init (self):
+        pg.init()
         # Display init
         pg.display.set_caption('Tetris')
         icon = pg.image.load('Images/icon.png')
@@ -30,18 +31,15 @@ class GameController:
     def game_loop (self):
         self.game_init()
         clock = self.gd.clock
-        while pg.mixer.music.get_busy():
+        while self.gd.running:
             # Pygame loop speed
             time = clock.tick(c.FPS)
-            self.gd.fall_time += time
 
             # Update
             self.gv.screen.fill(c.BLACK)
-            self.gv.draw_tetris_UI(self.gd)
-            self.update()
+            self.check_pause()
 
             # Draw
-            self.gv.draw(self.gd)
             pg.display.flip()
         pg.quit()
 
@@ -83,7 +81,6 @@ class GameController:
                 col = self.gd.curr_block.curr_pos[i][1]
                 self.gd.curr_block.curr_pos[i] = (row+1, col)
                 new_grid[row+1][col] = self.gd.curr_block.color
-        self.gd.curr_block.dropped = True
         return new_grid
 
     # Follows super rotation system. If it collides, then don't rotate.
@@ -150,6 +147,19 @@ class GameController:
                 self.gd.curr_block.set_curr_state(next_state)
             return new_grid
 
+    # Pygame pauses and wait until unpaused. Shows controls and game menu.
+    def check_pause (self):
+        if not self.gd.paused:
+            self.update()
+            self.gv.draw_tetris_UI(self.gd)
+            self.gv.draw(self.gd)
+        else:
+            self.gv.pause_screen()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.gd.running = False
+                elif event.type == pg.KEYDOWN and event.key == pg.K_p:
+                    self.gd.paused = not self.gd.paused
 
     """Automatic Changes"""
     def next_block_load (self):
@@ -157,7 +167,7 @@ class GameController:
 
         # Check if we can still load block without overlapping
         if self.block_overlap():
-            pg.quit()
+            self.gd.running = False
 
     def next_block_generate (self):
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
@@ -169,36 +179,44 @@ class GameController:
         # Next block
         self.gd.set_next_block(Block(rand.choice(block_list)).clone())
         # # ---TESTING---
-        # self.set_curr_block(Block('O'))
-        # self.set_curr_block(self.curr_block.clone())
-        # self.set_next_block(Block('O'))
-        # self.set_next_block(self.next_block.clone())
+        # self.gd.set_curr_block(Block('I'))
+        # self.gd.set_curr_block(self.gd.curr_block.clone())
+        # self.gd.set_next_block(Block('I'))
+        # self.gd.set_next_block(self.gd.next_block.clone())
 
     def hold_block_load (self):
         self.hold_block_generate()
 
         # Check if we can still load block without overlapping
         if self.block_overlap():
-            pg.quit()
+            self.gd.running = False
 
     def hold_block_generate (self):
+        # First time holding a block
         if self.gd.hold_block == None:
             self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
             self.block_erase(self.gd.grid)
             self.next_block_generate()
+        # Swap current block with hold block
         else:
             temp_hold_block = self.gd.get_hold_block()
             self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
             self.block_erase(self.gd.grid)
             self.gd.set_curr_block(temp_hold_block)
 
-    # Block falls at a consistent speed depending on the level
+    # Block fall speed increases after every 5 levels until level 20
     def block_fall (self):
-        # default = 1000
-        if self.gd.fall_time / 3500 > self.gd.fall_speed:
-            self.gd.fall_time = 0
-            if not self.block_collision_v():
-                return self.soft_drop()
+        curr_level = self.gd.get_level()
+        fall_level = self.gd.get_fall_level()
+        fall_time = self.gd.get_fall_time()
+        fall_delay = self.gd.get_fall_delay()
+
+        self.gd.set_fall_time(fall_time + 10)
+        if curr_level == fall_level and fall_level != 20:
+            self.gd.set_fall_level(fall_level + 5)
+            self.gd.set_fall_delay(fall_delay / 2)
+        if not self.block_collision_v() and fall_time % fall_delay == 0:
+            return self.soft_drop()
         return self.gd.grid
 
     # Allows a block leaning against a wall to rotate when it should not
@@ -245,7 +263,7 @@ class GameController:
         elif lines == 4:
             self.gd.set_score(1200 * (n + 1))
 
-    # Check if row(s) on grid is filled up.
+    # Check if row(s) on grid is filled up
     def check_line_clear (self):
         clear_counter = 0
         for i, row in enumerate(self.gd.grid):
@@ -253,11 +271,17 @@ class GameController:
                 self.remove_line(i)
                 clear_counter += 1
         self.scoring(clear_counter)
+        self.gd.set_lines_cleared(self.gd.get_lines_cleared() + clear_counter)
+        if self.gd.get_lines_cleared() >= 10:
+            self.gd.set_level(self.gd.get_level() + 1)
+            self.gd.set_lines_cleared(self.gd.get_lines_cleared() % 10)
 
+    # Remove filled up line
     def remove_line (self, row_index):
         del self.gd.grid[row_index]
         self.gd.grid.insert(0, [c.GREY] * c.COLUMN_COUNT)
 
+    # Listen to events
     def event_listener (self):
         # Soft drop (key hold)
         if pg.key.get_pressed()[pg.K_DOWN] and not self.block_collision_v():
@@ -265,7 +289,7 @@ class GameController:
         for event in pg.event.get():
             # Close window
             if event.type == pg.QUIT:
-                pg.quit()
+                self.gd.running = False
             elif event.type == pg.KEYDOWN:
                 # Move left (key press)
                 if event.key == pg.K_LEFT and not self.block_collision_h("left"):
@@ -285,9 +309,12 @@ class GameController:
                 # Hold block (key press)
                 elif event.key == pg.K_c:
                     self.hold_block_load()
+                # Pause/Unpause (key press)
+                elif event.key == pg.K_p:
+                    self.gd.paused = not self.gd.paused
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
-                    pg.quit()
+                    self.gd.running = False
         self.block_fall()
 
     def update (self):
@@ -351,6 +378,7 @@ class GameController:
         return False
 
     """Miscellaneous"""
+    # Erase block from grid to avoid confusion when making changes
     def block_erase (self, grid):
         new_grid = grid
         for i in range(4):
@@ -359,6 +387,7 @@ class GameController:
             new_grid[row][col] = c.GREY
         return new_grid
 
+    # Difference in positions of squares to get from a,b,c,d to a',b',c',d'
     def find_diff (self, direction, curr_points, next_points):
         result = []
         for i in range(4):
@@ -371,6 +400,4 @@ class GameController:
             else:
                 result.append((curr_row - next_row, curr_col - next_col))
         return result
-
-    def play_sound (self, sound):
-        return
+        

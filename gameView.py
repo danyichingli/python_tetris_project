@@ -16,9 +16,8 @@ class GameView:
                                 c.SQUARE_SIZE, c.SQUARE_SIZE)
                 pg.draw.rect(self.screen, color, rect)
 
-    def draw_label (self, text, xpos, ypos):
-        tetris_font = pg.font.Font("Font/modern-tetris.ttf", 20)
-        label = tetris_font.render(text, 1, c.WHITE)
+    def draw_label (self, myfont, text, xpos, ypos):
+        label = myfont.render(text, 1, c.WHITE)
         self.screen.blit(label, (xpos, ypos))
 
 
@@ -39,15 +38,29 @@ class GameView:
                 pg.draw.rect(self.screen, color, rect)
 
     def draw_tetris_UI (self, gd):
+        tetris_font = pg.font.Font("Font/modern-tetris.ttf", 20)
         # Hold
-        self.draw_label("HOLD", 65, 25)
+        self.draw_label(tetris_font, "HOLD", 65, 25)
         self.draw_mini_grid(gd, gd.get_hold_block(), 30, 60)
         # Next
-        self.draw_label("NEXT", 615, 25)
+        self.draw_label(tetris_font, "NEXT", 615, 25)
         self.draw_mini_grid(gd, gd.get_next_block(), 580, 60)
         # Level
-        self.draw_label("LEVEL", 604, 210)
-        self.draw_label(str(gd.get_level()), 604, 245)
+        self.draw_label(tetris_font, "LEVEL", 604, 210)
+        self.draw_label(tetris_font, str(gd.get_level()), 604, 245)
         # Score
-        self.draw_label("SCORE", 603, 325)
-        self.draw_label(str(gd.get_score()).zfill(6), 603, 360)
+        self.draw_label(tetris_font, "SCORE", 603, 325)
+        self.draw_label(tetris_font, str(gd.get_score()).zfill(6), 603, 360)
+
+    def pause_screen (self):
+        pause = pg.Surface([c.WIDTH, c.HEIGHT])
+        pause.set_alpha(35)
+        pause.fill((255,255,255))
+        self.screen.blit(pause,(0,0))
+        temp_height = 25
+        help_font = pg.font.SysFont("Lucida Console", 35)
+        instruction_font = pg.font.SysFont("Lucida Console", 20)
+        self.draw_label(help_font, "HELP", 333, temp_height)
+        for instruction in c.INSTRUCTIONS:
+            temp_height += 45
+            self.draw_label(instruction_font, instruction, 125, temp_height)
