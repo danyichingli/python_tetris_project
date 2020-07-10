@@ -1,13 +1,11 @@
 import pygame as pg
 import sys
 import constants as c
+from baseView import BaseView
 from gameData import GameData
 
-class GameView:
-    def __init__ (self):
-        self.screen = pg.display.set_mode((c.WIDTH, c.HEIGHT))
-
-    def draw (self, gd):
+class GameView(BaseView):
+    def draw_grid (self, gd):
         for row in range(c.ROW_COUNT):
             for col in range(c.COLUMN_COUNT):
                 color = gd.grid[row][col]
@@ -15,11 +13,6 @@ class GameView:
                                c.SQUARE * row + c.HEADER/2 + c.SQUARE_MARGIN,
                                 c.SQUARE_SIZE, c.SQUARE_SIZE)
                 pg.draw.rect(self.screen, color, rect)
-
-    def draw_label (self, myfont, text, xpos, ypos):
-        label = myfont.render(text, 1, c.WHITE)
-        self.screen.blit(label, (xpos, ypos))
-
 
     def draw_mini_grid (self, gd, block, xpos, ypos):
         mini_grid = [[c.GREY for column in range(4)] for row in range(4)]
@@ -51,16 +44,9 @@ class GameView:
         # Score
         self.draw_label(tetris_font, "SCORE", 603, 325)
         self.draw_label(tetris_font, str(gd.get_score()).zfill(6), 603, 360)
+        # Pause
+        self.draw_label(tetris_font, "Press 'P'", 603, 440)
+        self.draw_label(tetris_font, "to pause", 603, 475)
 
-    def pause_screen (self):
-        pause = pg.Surface([c.WIDTH, c.HEIGHT])
-        pause.set_alpha(35)
-        pause.fill((255,255,255))
-        self.screen.blit(pause,(0,0))
-        temp_height = 25
-        help_font = pg.font.SysFont("Lucida Console", 35)
-        instruction_font = pg.font.SysFont("Lucida Console", 20)
-        self.draw_label(help_font, "HELP", 333, temp_height)
-        for instruction in c.INSTRUCTIONS:
-            temp_height += 45
-            self.draw_label(instruction_font, instruction, 125, temp_height)
+    def draw_game_over (self):
+        return

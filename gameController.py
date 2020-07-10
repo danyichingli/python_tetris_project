@@ -2,6 +2,7 @@ import pygame as pg
 import constants as c
 import random as rand
 from gameView import GameView
+from pauseView import PauseView
 from gameData import GameData
 from block import Block
 
@@ -9,6 +10,7 @@ class GameController:
     def __init__ (self):
         self.gd = GameData()
         self.gv = GameView()
+        self.pv = PauseView()
 
     """Game Execution"""
     def game_init (self):
@@ -25,7 +27,7 @@ class GameController:
         # Mixer init
         pg.mixer.init(44100, -16,2,2048)
         pg.mixer.music.load('Music/Tetris.mp3')
-        pg.mixer.music.set_volume(0)
+        pg.mixer.music.set_volume(0.1)
         pg.mixer.music.play(-1)
 
     def game_loop (self):
@@ -152,14 +154,27 @@ class GameController:
         if not self.gd.paused:
             self.update()
             self.gv.draw_tetris_UI(self.gd)
-            self.gv.draw(self.gd)
+            self.gv.draw_grid(self.gd)
         else:
-            self.gv.pause_screen()
+            settings_pos, quit_pos = self.pv.draw_pause()
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.gd.running = False
-                elif event.type == pg.KEYDOWN and event.key == pg.K_p:
-                    self.gd.paused = not self.gd.paused
+                elif event.type == pg.KEYDOWN:
+                    if event.key == pg.K_p:
+                        self.gd.paused = not self.gd.paused
+                    elif event.key == pg.K_ESCAPE:
+                        self.gd.running = False
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    if settings_pos.collidepoint(pg.mouse.get_pos()):
+                        select = pg.mixer.Sound("Sounds/Select.wav")
+                        select.set_volume(0.1)
+                        pg.mixer.Sound.play(select)
+                        return
+                    elif quit_pos.collidepoint(pg.mouse.get_pos()):
+                        self.gd.running = False
+
+
 
     """Automatic Changes"""
     def next_block_load (self):
@@ -400,4 +415,3 @@ class GameController:
             else:
                 result.append((curr_row - next_row, curr_col - next_col))
         return result
-        
