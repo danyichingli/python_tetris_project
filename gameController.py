@@ -1,19 +1,19 @@
 import pygame as pg
 import constants as c
 import random as rand
-from gameView import GameView
-from pauseView import PauseView
 from gameData import GameData
+from gameView import GameView
+from pauseController import PauseController
 from block import Block
 
 class GameController:
     def __init__ (self):
         self.gd = GameData()
         self.gv = GameView()
-        self.pv = PauseView()
 
     """Game Execution"""
     def game_init (self):
+        pg.mixer.pre_init(44100, -16,2,2048)
         pg.init()
         # Display init
         pg.display.set_caption('Tetris')
@@ -25,7 +25,6 @@ class GameController:
         self.gd.grid_generate()
         self.next_block_load()
         # Mixer init
-        pg.mixer.init(44100, -16,2,2048)
         pg.mixer.music.load('Music/Tetris.mp3')
         pg.mixer.music.set_volume(0.1)
         pg.mixer.music.play(-1)
@@ -156,25 +155,8 @@ class GameController:
             self.gv.draw_tetris_UI(self.gd)
             self.gv.draw_grid(self.gd)
         else:
-            settings_pos, quit_pos = self.pv.draw_pause()
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.gd.running = False
-                elif event.type == pg.KEYDOWN:
-                    if event.key == pg.K_p:
-                        self.gd.paused = not self.gd.paused
-                    elif event.key == pg.K_ESCAPE:
-                        self.gd.running = False
-                elif event.type == pg.MOUSEBUTTONDOWN:
-                    if settings_pos.collidepoint(pg.mouse.get_pos()):
-                        select = pg.mixer.Sound("Sounds/Select.wav")
-                        select.set_volume(0.1)
-                        pg.mixer.Sound.play(select)
-                        return
-                    elif quit_pos.collidepoint(pg.mouse.get_pos()):
-                        self.gd.running = False
-
-
+            pause_menu = PauseController(self.gd)
+            pause_menu.pause_event_listener()
 
     """Automatic Changes"""
     def next_block_load (self):
@@ -297,7 +279,7 @@ class GameController:
         self.gd.grid.insert(0, [c.GREY] * c.COLUMN_COUNT)
 
     # Listen to events
-    def event_listener (self):
+    def game_event_listener (self):
         # Soft drop (key hold)
         if pg.key.get_pressed()[pg.K_DOWN] and not self.block_collision_v():
             self.soft_drop()
@@ -333,7 +315,7 @@ class GameController:
         self.block_fall()
 
     def update (self):
-        self.event_listener()
+        self.game_event_listener()
         if self.gd.curr_block.dropped:
             self.check_line_clear()
             self.next_block_load()
