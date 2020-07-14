@@ -1,18 +1,22 @@
 import pygame as pg
-import random as rand
 import constants as c
 from block import Block
 
-class GameD ata:
+class GameData:
     def __init__ (self):
         self.curr_block = None
         self.next_block = None
+        self.hold_block = None
         self.grid = []
         self.score = 0
-        self.level = 0
+        self.lines_cleared = 0
+        self.level = 1
         self.clock = pg.time.Clock()
         self.fall_time = 0
-        self.fall_speed = 0.27
+        self.fall_delay = 1000
+        self.fall_level = 5
+        self.running = True
+        self.paused = False
 
     def get_curr_block (self):
         return self.curr_block
@@ -26,6 +30,12 @@ class GameD ata:
     def set_next_block (self, block):
         self.next_block = block
 
+    def get_hold_block (self):
+        return self.hold_block
+
+    def set_hold_block (self, block):
+        self.hold_block = block
+
     def get_grid (self):
         return self.grid
 
@@ -38,26 +48,35 @@ class GameD ata:
     def set_score (self, score):
         self.score += score
 
+    def get_lines_cleared (self):
+        return self.lines_cleared
+
+    def set_lines_cleared (self, lines_cleared):
+        self.lines_cleared = lines_cleared
+
     def get_level (self):
         return self.level
 
     def set_level (self, level):
-        self.level += level
+        self.level = level
 
-    def block_generate (self):
-        block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
-        # Current block
-        if self.curr_block == None:
-            self.set_curr_block(Block(rand.choice(block_list)).clone())
-        else:
-            self.set_curr_block(Block(self.next_block.template).clone())
-        # Next block
-        self.set_next_block(Block(rand.choice(block_list)).clone())
-        # # ---TESTING---
-        # self.set_curr_block(Block('O'))
-        # self.set_curr_block(self.curr_block.clone())
-        # self.set_next_block(Block('O'))
-        # self.set_next_block(self.next_block.clone())
+    def get_fall_time (self):
+        return self.fall_time
+
+    def set_fall_time (self, increment):
+        self.fall_time = increment
+
+    def get_fall_delay (self):
+        return self.fall_delay
+
+    def set_fall_delay (self, delay):
+        self.fall_delay = delay
+
+    def get_fall_level (self):
+        return self.fall_level
+
+    def set_fall_level (self, level):
+        self.fall_level = level
 
     def grid_generate (self):
         # Create a grid with color other than black.
