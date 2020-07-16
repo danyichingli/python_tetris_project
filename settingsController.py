@@ -9,6 +9,10 @@ class SettingsController:
         self.sounds = sounds
         self.music = music
 
+    # TODO
+    def settings_event_listener (self):
+        return
+
     def increase_sound_volume (self):
         if self.sd.get_sounds_vol() < 1:
             for sound in self.sounds:

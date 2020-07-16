@@ -16,4 +16,3 @@ class SettingsData:
 
     def set_music_vol (self, vol):
         self.music_vol = vol
-        
