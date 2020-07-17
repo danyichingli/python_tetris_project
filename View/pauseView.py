@@ -1,8 +1,8 @@
 import pygame as pg
 import sys
 import constants as c
-from baseView import BaseView
-from button import Button
+from View.baseView import BaseView
+from .button import Button
 
 class PauseView (BaseView):
     def draw_pause (self):

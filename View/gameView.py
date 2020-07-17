@@ -1,8 +1,7 @@
 import pygame as pg
 import sys
 import constants as c
-from baseView import BaseView
-from gameData import GameData
+from View.baseView import BaseView
 
 class GameView(BaseView):
     def draw_grid (self, gd):

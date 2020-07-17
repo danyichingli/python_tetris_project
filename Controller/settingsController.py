@@ -1,6 +1,6 @@
 import pygame as pg
-from settingsData import SettingsData
-from settingsView import SettingsView
+from Data.settingsData import SettingsData
+from View.settingsView import SettingsView
 
 class SettingsController:
     def __init__ (self, sd, sounds, music):

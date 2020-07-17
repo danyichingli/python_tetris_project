@@ -1,21 +1,16 @@
 import pygame as pg
 import constants as c
-from pauseView import PauseView
-from settingsController import SettingsController
-from gameData import GameData
+from View.pauseView import PauseView
+from Controller.settingsController import SettingsController
 
 class PauseController:
     def __init__ (self, gd):
         self.gd = gd
-        self.sd =
         self.pv = PauseView()
         self.in_settings = False
 
     def pause_event_listener (self):
         # TODO: Find a way to switch in and out of setttings
-        if self.in_settings:
-            settings_menu = SettingsController()
-            settings_menu.settings_event_listener()
         settings_pos, quit_pos = self.pv.draw_pause()
         for event in pg.event.get():
             if event.type == pg.QUIT:

@@ -1,15 +1,15 @@
 import pygame as pg
 import constants as c
 import random as rand
-from gameData import GameData
-from gameView import GameView
-from pauseController import PauseController
+from View.gameView import GameView
+from Controller.pauseController import PauseController
 from block import Block
 
 class GameController:
-    def __init__ (self):
-        self.gd = GameData()
+    def __init__ (self, gd):
+        self.gd = gd
         self.gv = GameView()
+        self.signal = ""
 
     """Game Execution"""
     def game_init (self):
