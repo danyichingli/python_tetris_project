@@ -9,7 +9,7 @@ class GameController:
     def __init__ (self, gd):
         self.gd = gd
         self.gv = GameView()
-        self.signal = ""
+        self.signal = "game"
 
     """Game Execution"""
     def game_init (self):
@@ -32,16 +32,19 @@ class GameController:
     def game_loop (self):
         self.game_init()
         clock = self.gd.clock
-        while self.gd.running:
+        while self.signal == "game":
             # Pygame loop speed
             time = clock.tick(c.FPS)
 
             # Update
             self.gv.screen.fill(c.BLACK)
-            self.check_pause()
+            self.update()
+            self.gv.draw_tetris_UI(self.gd)
+            self.gv.draw_grid(self.gd)
 
             # Draw
             pg.display.flip()
+        #return self.signal
         pg.quit()
 
     """Manual Changes"""
@@ -147,16 +150,6 @@ class GameController:
                     new_grid[next_row][next_col] = self.gd.curr_block.color
                 self.gd.curr_block.set_curr_state(next_state)
             return new_grid
-
-    # Pygame pauses and wait until unpaused. Shows controls and game menu.
-    def check_pause (self):
-        if not self.gd.paused:
-            self.update()
-            self.gv.draw_tetris_UI(self.gd)
-            self.gv.draw_grid(self.gd)
-        else:
-            pause_menu = PauseController(self.gd)
-            pause_menu.pause_event_listener()
 
     """Automatic Changes"""
     def next_block_load (self):
@@ -308,7 +301,7 @@ class GameController:
                     self.hold_block_load()
                 # Pause/Unpause (key press)
                 elif event.key == pg.K_p:
-                    self.gd.paused = not self.gd.paused
+                    self.signal = "pause"
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
                     self.gd.running = False

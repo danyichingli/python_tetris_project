@@ -1,5 +1,4 @@
 import pygame as pg
-import sys
 import constants as c
 from View.baseView import BaseView
 from .button import Button

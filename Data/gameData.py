@@ -15,8 +15,6 @@ class GameData:
         self.fall_time = 0
         self.fall_delay = 1000
         self.fall_level = 5
-        self.running = True
-        self.paused = False
 
     def get_curr_block (self):
         return self.curr_block
