@@ -16,4 +16,5 @@ class MainMenuView (BaseView):
         settings_pos = settings_button.button_center(self.screen, 0, 300)
         self.draw_button(self.screen, settings_button.button, settings_button.button_h,
                         settings_pos)
+
         return start_game_pos, settings_pos

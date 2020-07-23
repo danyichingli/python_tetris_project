@@ -5,4 +5,5 @@ class Main:
         # Objects
         control = MainMenuController()
         # Game start
-        return control.main_menu_event_listener()
+        control.main_menu_event_listener()
+        return control.signal

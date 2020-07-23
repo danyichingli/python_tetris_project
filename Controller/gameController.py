@@ -11,41 +11,24 @@ class GameController:
         self.gv = GameView()
         self.signal = "game"
 
-    """Game Execution"""
-    def game_init (self):
-        pg.mixer.pre_init(44100, -16,2,2048)
-        pg.init()
-        # Display init
-        pg.display.set_caption('Tetris')
-        icon = pg.image.load('Images/icon.png')
-        pg.display.set_icon(icon)
-        # Text init
-        pg.font.init()
-        # Game init
-        self.gd.grid_generate()
-        self.next_block_load()
-        # Mixer init
-        pg.mixer.music.load('Music/Tetris.mp3')
-        pg.mixer.music.set_volume(0.1)
-        pg.mixer.music.play(-1)
-
     def game_loop (self):
-        self.game_init()
-        clock = self.gd.clock
+        # Game init
+        if self.gd.new_game:
+            self.gd.grid_generate()
+            self.next_block_load()
+            self.gd.new_game = False
         while self.signal == "game":
             # Pygame loop speed
-            time = clock.tick(c.FPS)
-
+            time = self.gd.clock.tick(c.FPS)
             # Update
             self.gv.screen.fill(c.BLACK)
             self.update()
             self.gv.draw_tetris_UI(self.gd)
             self.gv.draw_grid(self.gd)
-
             # Draw
             pg.display.flip()
+        return self.signal
         #return self.signal
-        pg.quit()
 
     """Manual Changes"""
     # Left/Right movement
@@ -279,7 +262,7 @@ class GameController:
         for event in pg.event.get():
             # Close window
             if event.type == pg.QUIT:
-                self.gd.running = False
+                self.signal = "quit"
             elif event.type == pg.KEYDOWN:
                 # Move left (key press)
                 if event.key == pg.K_LEFT and not self.block_collision_h("left"):
@@ -304,7 +287,7 @@ class GameController:
                     self.signal = "pause"
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
-                    self.gd.running = False
+                    self.signal = "quit"
         self.block_fall()
 
     def update (self):

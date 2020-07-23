@@ -10,17 +10,21 @@ class PauseController:
 
     def pause_event_listener (self):
         # TODO: Find a way to switch in and out of setttings
-        settings_pos, quit_pos = self.pv.draw_pause()
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                self.gd.running = False
-            elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_p:
-                    self.signal = "game"
-                elif event.key == pg.K_ESCAPE:
+        while self.signal == "pause":
+            self.pv.screen.fill(c.BLACK)
+            settings_pos, quit_pos = self.pv.draw_pause()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
                     self.signal = "quit"
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                if settings_pos.collidepoint(pg.mouse.get_pos()):
-                    self.signal = "settings"
-                elif quit_pos.collidepoint(pg.mouse.get_pos()):
-                    self.signal = "quit"
+                elif event.type == pg.KEYDOWN:
+                    if event.key == pg.K_p:
+                        self.signal = "game"
+                    elif event.key == pg.K_ESCAPE:
+                        self.signal = "quit"
+                elif event.type == pg.MOUSEBUTTONDOWN:
+                    if settings_pos.collidepoint(pg.mouse.get_pos()):
+                        self.signal = "settings"
+                    elif quit_pos.collidepoint(pg.mouse.get_pos()):
+                        self.signal = "quit"
+            pg.display.flip()
+        return self.signal

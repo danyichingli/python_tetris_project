@@ -4,6 +4,7 @@ from block import Block
 
 class GameData:
     def __init__ (self):
+        self.new_game = True
         self.curr_block = None
         self.next_block = None
         self.hold_block = None

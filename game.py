@@ -6,3 +6,4 @@ class Game:
         control = GameController(gd)
         # Game start
         control.game_loop()
+        return control.signal
