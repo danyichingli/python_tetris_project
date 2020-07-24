@@ -1,6 +1,6 @@
 from Controller.mainMenuController import MainMenuController
 
-class Main:
+class MainMenu:
     def run (self):
         # Objects
         control = MainMenuController()

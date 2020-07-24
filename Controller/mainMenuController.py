@@ -9,7 +9,7 @@ class MainMenuController:
 
     def main_menu_event_listener (self):
         while self.signal == "main_menu":
-            start_game_pos, settings_pos = self.mmv.draw_main_menu()
+            start_game_pos, settings_pos, quit_pos = self.mmv.draw_main_menu()
             for event in pg.event.get():
                 if event.type == pg.QUIT:
                     self.signal = "quit"
@@ -21,5 +21,7 @@ class MainMenuController:
                         self.signal = "game"
                     elif settings_pos.collidepoint(pg.mouse.get_pos()):
                         self.signal = "settings"
+                    elif quit_pos.collidepoint(pg.mouse.get_pos()):
+                        self.signal = "quit"
             pg.display.flip()
         return self.signal
