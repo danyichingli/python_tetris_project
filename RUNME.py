@@ -2,7 +2,7 @@ import pygame as pg
 from mainMenu import MainMenu
 from game import Game
 from pause import Pause
-#from pause import Pause
+from settings import Settings
 from Data.gameData import GameData
 from Data.settingsData import SettingsData
 from Controller.mainMenuController import MainMenuController
@@ -27,28 +27,31 @@ def execute ():
     # Initialize Data
     gd = GameData()
     sd = SettingsData()
-    signal = "main_menu"
+    curr_signal = "main_menu"
+    prev_signal = ""
     # Initialize Objects
     main_menu = MainMenu()
     game = Game()
     pause = Pause()
-    settings = None
+    settings = Settings()
     game_init()
     # Begin
-    while signal != "quit":
-        if signal == "main_menu":
+    while curr_signal != "quit":
+        if curr_signal == "main_menu":
             # Reset if there was an instance of game
             gd.new_game = True
             pg.mixer.music.stop()
             pg.mixer.music.rewind()
-            signal = main_menu.run(sd)
-        if signal == "game":
+            curr_signal = main_menu.run()
+            prev_signal = "main_menu"
+        if curr_signal == "game":
             pg.mixer.music.play(-1)
-            signal = game.run(gd)
-        if signal == "pause":
-            signal = pause.run(gd, sd)
-        # if signal == "settings":
-        #     signal =
+            curr_signal = game.run(gd)
+        if curr_signal == "pause":
+            curr_signal = pause.run(gd)
+            prev_signal = "pause"
+        if curr_signal == "settings":
+            curr_signal = settings.run(sd, prev_signal)
     pg.quit()
 
 execute()

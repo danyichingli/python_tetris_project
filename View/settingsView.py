@@ -5,15 +5,13 @@ from .button import Button
 
 class SettingsView (BaseView):
     def draw_settings (self, sd):
+        volume = sd.music_vol * 100
         settings = pg.Surface([c.WIDTH, c.HEIGHT])
         settings.fill(c.BLACK)
         self.screen.blit(settings,(0,0))
 
-        # Change sound volume
-        self.draw_arrows ("test", 200)
-
         # Change music volume
-        self.draw_arrows ("test", 300)
+        self.draw_arrows (str(volume), 300)
 
     def draw_arrows (self, label, y_offset):
         left_button = Button(self.screen, "Left_Arrow","Left_Arrow_H")
