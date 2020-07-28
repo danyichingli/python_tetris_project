@@ -9,6 +9,7 @@ class MainMenuController:
 
     def main_menu_event_listener (self):
         while self.signal == "main_menu":
+            pg.time.Clock().tick(c.FPS)
             start_game_pos, settings_pos, quit_pos = self.mmv.draw_main_menu()
             for event in pg.event.get():
                 if event.type == pg.QUIT:

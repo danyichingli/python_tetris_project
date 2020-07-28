@@ -6,4 +6,4 @@ class Settings:
         control = SettingsController(sd, prev_signal)
         # Game start
         control.settings_event_listener()
-        return control.signal
+        return control.curr_signal

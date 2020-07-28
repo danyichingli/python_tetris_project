@@ -11,6 +11,7 @@ class PauseController:
     def pause_event_listener (self):
         # TODO: Find a way to switch in and out of setttings
         while self.signal == "pause":
+            pg.time.Clock().tick(c.FPS)
             self.pv.screen.fill(c.BLACK)
             settings_pos, quit_pos = self.pv.draw_pause()
             for event in pg.event.get():

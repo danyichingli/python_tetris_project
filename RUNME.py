@@ -20,13 +20,13 @@ def game_init ():
     pg.font.init()
     # Mixer init
     pg.mixer.music.load('Music/Tetris.mp3')
-    pg.mixer.music.set_volume(0.1)
+    pg.mixer.music.set_volume(1)
 
 # Execute game from here
 def execute ():
     # Initialize Data
     gd = GameData()
-    sd = SettingsData()
+    sd = SettingsData(100)
     curr_signal = "main_menu"
     prev_signal = ""
     # Initialize Objects
@@ -39,6 +39,7 @@ def execute ():
     while curr_signal != "quit":
         if curr_signal == "main_menu":
             # Reset if there was an instance of game
+            pg.mixer.music.set_volume(sd.get_music_vol()  * 0.01)
             gd.new_game = True
             pg.mixer.music.stop()
             pg.mixer.music.rewind()
