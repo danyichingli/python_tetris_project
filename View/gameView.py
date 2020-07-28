@@ -1,8 +1,7 @@
 import pygame as pg
 import sys
 import constants as c
-from baseView import BaseView
-from gameData import GameData
+from View.baseView import BaseView
 
 class GameView(BaseView):
     def draw_grid (self, gd):
@@ -31,7 +30,7 @@ class GameView(BaseView):
                 pg.draw.rect(self.screen, color, rect)
 
     def draw_tetris_UI (self, gd):
-        tetris_font = pg.font.Font("Font/modern-tetris.ttf", 20)
+        tetris_font = pg.font.SysFont("Lucida Console", 28)
         # Hold
         self.draw_label(tetris_font, "HOLD", 65, 25)
         self.draw_mini_grid(gd, gd.get_hold_block(), 30, 60)

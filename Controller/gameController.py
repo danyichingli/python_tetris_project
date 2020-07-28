@@ -1,49 +1,34 @@
 import pygame as pg
 import constants as c
 import random as rand
-from gameView import GameView
-from pauseView import PauseView
-from gameData import GameData
+from View.gameView import GameView
+from Controller.pauseController import PauseController
 from block import Block
 
 class GameController:
-    def __init__ (self):
-        self.gd = GameData()
+    def __init__ (self, gd):
+        self.gd = gd
         self.gv = GameView()
-        self.pv = PauseView()
-
-    """Game Execution"""
-    def game_init (self):
-        pg.init()
-        # Display init
-        pg.display.set_caption('Tetris')
-        icon = pg.image.load('Images/icon.png')
-        pg.display.set_icon(icon)
-        # Text init
-        pg.font.init()
-        # Game init
-        self.gd.grid_generate()
-        self.next_block_load()
-        # Mixer init
-        pg.mixer.init(44100, -16,2,2048)
-        pg.mixer.music.load('Music/Tetris.mp3')
-        pg.mixer.music.set_volume(0.1)
-        pg.mixer.music.play(-1)
+        self.signal = "game"
 
     def game_loop (self):
-        self.game_init()
-        clock = self.gd.clock
-        while self.gd.running:
+        # Game init
+        if self.gd.new_game:
+            self.gd.grid_generate()
+            self.next_block_load()
+            self.gd.new_game = False
+        while self.signal == "game":
             # Pygame loop speed
-            time = clock.tick(c.FPS)
-
+            time = self.gd.clock.tick(c.FPS)
             # Update
             self.gv.screen.fill(c.BLACK)
-            self.check_pause()
-
+            self.update()
+            self.gv.draw_tetris_UI(self.gd)
+            self.gv.draw_grid(self.gd)
             # Draw
             pg.display.flip()
-        pg.quit()
+        return self.signal
+        #return self.signal
 
     """Manual Changes"""
     # Left/Right movement
@@ -148,33 +133,6 @@ class GameController:
                     new_grid[next_row][next_col] = self.gd.curr_block.color
                 self.gd.curr_block.set_curr_state(next_state)
             return new_grid
-
-    # Pygame pauses and wait until unpaused. Shows controls and game menu.
-    def check_pause (self):
-        if not self.gd.paused:
-            self.update()
-            self.gv.draw_tetris_UI(self.gd)
-            self.gv.draw_grid(self.gd)
-        else:
-            settings_pos, quit_pos = self.pv.draw_pause()
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.gd.running = False
-                elif event.type == pg.KEYDOWN:
-                    if event.key == pg.K_p:
-                        self.gd.paused = not self.gd.paused
-                    elif event.key == pg.K_ESCAPE:
-                        self.gd.running = False
-                elif event.type == pg.MOUSEBUTTONDOWN:
-                    if settings_pos.collidepoint(pg.mouse.get_pos()):
-                        select = pg.mixer.Sound("Sounds/Select.wav")
-                        select.set_volume(0.1)
-                        pg.mixer.Sound.play(select)
-                        return
-                    elif quit_pos.collidepoint(pg.mouse.get_pos()):
-                        self.gd.running = False
-
-
 
     """Automatic Changes"""
     def next_block_load (self):
@@ -297,14 +255,14 @@ class GameController:
         self.gd.grid.insert(0, [c.GREY] * c.COLUMN_COUNT)
 
     # Listen to events
-    def event_listener (self):
+    def game_event_listener (self):
         # Soft drop (key hold)
         if pg.key.get_pressed()[pg.K_DOWN] and not self.block_collision_v():
             self.soft_drop()
         for event in pg.event.get():
             # Close window
             if event.type == pg.QUIT:
-                self.gd.running = False
+                self.signal = "quit"
             elif event.type == pg.KEYDOWN:
                 # Move left (key press)
                 if event.key == pg.K_LEFT and not self.block_collision_h("left"):
@@ -326,14 +284,14 @@ class GameController:
                     self.hold_block_load()
                 # Pause/Unpause (key press)
                 elif event.key == pg.K_p:
-                    self.gd.paused = not self.gd.paused
+                    self.signal = "pause"
                 # Close window (key press)
                 elif event.key == pg.K_ESCAPE:
-                    self.gd.running = False
+                    self.signal = "quit"
         self.block_fall()
 
     def update (self):
-        self.event_listener()
+        self.game_event_listener()
         if self.gd.curr_block.dropped:
             self.check_line_clear()
             self.next_block_load()
