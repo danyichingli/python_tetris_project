@@ -1,6 +1,7 @@
 import pygame as pg
 import constants as c
 from block import Block
+from square import Square
 
 class GameData:
     def __init__ (self):
@@ -8,6 +9,7 @@ class GameData:
         self.curr_block = None
         self.next_block = None
         self.hold_block = None
+        self.ghost_block = None
         self.grid = []
         self.score = 0
         self.lines_cleared = 0
@@ -79,6 +81,6 @@ class GameData:
 
     def grid_generate (self):
         # Create a grid with color other than black.
-        grid = [[c.GREY for column in range(c.COLUMN_COUNT)]
+        grid = [[Square(c.GREY, "EMPTY") for column in range(c.COLUMN_COUNT)]
                     for row in range(c.ROW_COUNT)]
         self.set_grid(grid)

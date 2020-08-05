@@ -27,7 +27,7 @@ def execute ():
     # Initialize Data
     gd = GameData()
     sd = SettingsData(100)
-    curr_signal = "main_menu"
+    curr_signal = "game"
     prev_signal = ""
     # Initialize Objects
     main_menu = MainMenu()
@@ -46,7 +46,8 @@ def execute ():
             curr_signal = main_menu.run()
             prev_signal = "main_menu"
         if curr_signal == "game":
-            pg.mixer.music.play(-1)
+            if prev_signal == "main_menu":
+                pg.mixer.music.play(-1)
             curr_signal = game.run(gd)
         if curr_signal == "pause":
             curr_signal = pause.run(gd)

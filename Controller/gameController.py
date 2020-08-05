@@ -4,6 +4,8 @@ import random as rand
 from View.gameView import GameView
 from Controller.pauseController import PauseController
 from block import Block
+from square import Square
+from copy import deepcopy
 
 class GameController:
     def __init__ (self, gd):
@@ -41,10 +43,10 @@ class GameController:
             col = self.gd.curr_block.curr_pos[i][1]
             if direction == "left":
                 self.gd.curr_block.curr_pos[i] = (row, col-1)
-                new_grid[row][col-1] = self.gd.curr_block.color
+                new_grid[row][col-1] = Square(self.gd.curr_block.get_color(), "BLOCK")
             else: # direction == "right"
                 self.gd.curr_block.curr_pos[i] = (row, col+1)
-                new_grid[row][col+1] = self.gd.curr_block.color
+                new_grid[row][col+1] = Square(self.gd.curr_block.get_color(), "BLOCK")
         return new_grid
 
     # Soft drop AKA "Down movement"
@@ -55,19 +57,19 @@ class GameController:
             row = self.gd.curr_block.curr_pos[i][0]
             col = self.gd.curr_block.curr_pos[i][1]
             self.gd.curr_block.curr_pos[i] = (row+1, col)
-            new_grid[row+1][col] = self.gd.curr_block.color
+            new_grid[row+1][col] = Square(self.gd.curr_block.get_color(), "BLOCK")
         return new_grid
 
     # Hard drop
-    def hard_drop (self):
+    def hard_drop (self, block):
         new_grid = self.gd.grid
         while not self.block_collision_v():
             self.block_erase(new_grid)
             for i in range(4):
-                row = self.gd.curr_block.curr_pos[i][0]
-                col = self.gd.curr_block.curr_pos[i][1]
-                self.gd.curr_block.curr_pos[i] = (row+1, col)
-                new_grid[row+1][col] = self.gd.curr_block.color
+                row = block.curr_pos[i][0]
+                col = block.curr_pos[i][1]
+                block.curr_pos[i] = (row+1, col)
+                new_grid[row+1][col] = Square(block.get_color(), block.get_type())
         return new_grid
 
     # Follows super rotation system. If it collides, then don't rotate.
@@ -130,7 +132,7 @@ class GameController:
                     next_row = row + diff[i][0]
                     next_col = col + diff[i][1]
                     self.gd.curr_block.curr_pos[i] = (next_row, next_col)
-                    new_grid[next_row][next_col] = self.gd.curr_block.color
+                    new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), "BLOCK")
                 self.gd.curr_block.set_curr_state(next_state)
             return new_grid
 
@@ -140,22 +142,21 @@ class GameController:
 
         # Check if we can still load block without overlapping
         if self.block_overlap():
-            self.gd.running = False
+            self.signal = "main_menu"
+            return
 
     def next_block_generate (self):
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
         # Current block
         if self.gd.curr_block == None:
-            self.gd.set_curr_block(Block(rand.choice(block_list)).clone())
+            self.gd.set_curr_block(Block(rand.choice(block_list), "BLOCK").clone())
         else:
-            self.gd.set_curr_block(Block(self.gd.next_block.template).clone())
+            self.gd.set_curr_block(Block(self.gd.next_block.template, "BLOCK").clone())
+        self.gd.ghost_block = Block(self.gd.curr_block.template, "GHOST")
+        self.gd.ghost_block.set_color(c.WHITE)
+        self.hard_drop(self.gd.ghost_block)
         # Next block
-        self.gd.set_next_block(Block(rand.choice(block_list)).clone())
-        # # ---TESTING---
-        # self.gd.set_curr_block(Block('I'))
-        # self.gd.set_curr_block(self.gd.curr_block.clone())
-        # self.gd.set_next_block(Block('I'))
-        # self.gd.set_next_block(self.gd.next_block.clone())
+        self.gd.set_next_block(Block(rand.choice(block_list), "BLOCK").clone())
 
     def hold_block_load (self):
         self.hold_block_generate()
@@ -167,13 +168,13 @@ class GameController:
     def hold_block_generate (self):
         # First time holding a block
         if self.gd.hold_block == None:
-            self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
+            self.gd.set_hold_block(Block(self.gd.curr_block.template, "BLOCK").clone())
             self.block_erase(self.gd.grid)
             self.next_block_generate()
         # Swap current block with hold block
         else:
             temp_hold_block = self.gd.get_hold_block()
-            self.gd.set_hold_block(Block(self.gd.curr_block.template).clone())
+            self.gd.set_hold_block(Block(self.gd.curr_block.template, "BLOCK").clone())
             self.block_erase(self.gd.grid)
             self.gd.set_curr_block(temp_hold_block)
 
@@ -240,7 +241,7 @@ class GameController:
     def check_line_clear (self):
         clear_counter = 0
         for i, row in enumerate(self.gd.grid):
-            if all(color != c.GREY for color in row):
+            if all(square.get_type() == "BLOCK" for square in row):
                 self.remove_line(i)
                 clear_counter += 1
         self.scoring(clear_counter)
@@ -252,7 +253,7 @@ class GameController:
     # Remove filled up line
     def remove_line (self, row_index):
         del self.gd.grid[row_index]
-        self.gd.grid.insert(0, [c.GREY] * c.COLUMN_COUNT)
+        self.gd.grid.insert(0, [Square(c.GREY, "EMPTY")] * c.COLUMN_COUNT)
 
     # Listen to events
     def game_event_listener (self):
@@ -272,7 +273,7 @@ class GameController:
                     self.move("right")
                 # Hard drop (key press)
                 elif event.key == pg.K_SPACE and not self.block_collision_v():
-                    self.hard_drop()
+                    self.hard_drop(self.gd.curr_block)
                 # Rotate clockwise (key press)
                 elif event.key == pg.K_x:
                     self.rotate("clockwise")
@@ -306,11 +307,11 @@ class GameController:
             col = pos[i][1]
             if side == "left":
                 if (col == 0 or ((row,col-1) not in pos
-                and temp_grid[row][col-1] != c.GREY)):
+                and temp_grid[row][col-1].get_type() == "BLOCK")):
                     return True
             else: # if side == "right"
                 if (col == 9 or ((row,col+1) not in pos
-                and temp_grid[row][col+1] != c.GREY)):
+                and temp_grid[row][col+1].get_type() == "BLOCK")):
                     return True
         return False
 
@@ -322,7 +323,7 @@ class GameController:
             row = pos[i][0]
             col = pos[i][1]
             if (row == 19 or ((row+1,col) not in pos
-            and temp_grid[row+1][col] != c.GREY)):
+            and temp_grid[row+1][col].get_type() == "BLOCK")):
                 self.gd.curr_block.dropped = True
                 return True
         return False
@@ -336,7 +337,7 @@ class GameController:
             col = pos[i][1] + diff[i][1]
             if row < 0 or row > 19 or col < 0 or col > 9:
                 return True
-            if (row,col) not in pos and temp_grid[row][col] != c.GREY:
+            if (row,col) not in pos and temp_grid[row][col].get_type() == "BLOCK":
                 return True
         return False
 
@@ -344,10 +345,10 @@ class GameController:
     def block_overlap (self):
         temp_grid = self.gd.get_grid()
         for pos in self.gd.curr_block.start_pos:
-            if temp_grid[pos[0]][pos[1]] != c.GREY:
+            if temp_grid[pos[0]][pos[1]].get_type() == "BLOCK":
                 print("Game Over!")
                 return True
-            temp_grid[pos[0]][pos[1]] = self.gd.curr_block.color
+            temp_grid[pos[0]][pos[1]] = Square(self.gd.curr_block.get_color(), "BLOCK")
         return False
 
     """Miscellaneous"""
@@ -357,7 +358,7 @@ class GameController:
         for i in range(4):
             row = self.gd.curr_block.curr_pos[i][0]
             col = self.gd.curr_block.curr_pos[i][1]
-            new_grid[row][col] = c.GREY
+            new_grid[row][col] = Square(c.GREY, "EMPTY")
         return new_grid
 
     # Difference in positions of squares to get from a,b,c,d to a',b',c',d'

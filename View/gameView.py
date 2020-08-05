@@ -2,28 +2,29 @@ import pygame as pg
 import sys
 import constants as c
 from View.baseView import BaseView
+from square import Square
 
 class GameView(BaseView):
     def draw_grid (self, gd):
         for row in range(c.ROW_COUNT):
             for col in range(c.COLUMN_COUNT):
-                color = gd.grid[row][col]
+                color = gd.grid[row][col].get_color()
                 rect = pg.Rect(c.SQUARE * col + (c.SIDE_SCREEN/2) + c.SQUARE_MARGIN,
                                c.SQUARE * row + c.HEADER/2 + c.SQUARE_MARGIN,
                                 c.SQUARE_SIZE, c.SQUARE_SIZE)
                 pg.draw.rect(self.screen, color, rect)
 
     def draw_mini_grid (self, gd, block, xpos, ypos):
-        mini_grid = [[c.GREY for column in range(4)] for row in range(4)]
+        mini_grid = [[Square(c.GREY, "EMPTY") for column in range(4)] for row in range(4)]
         if block != None:
             block_shape = block.shape
             for i in range(len(block_shape)):
                 row = block_shape[i][0]
                 col = block_shape[i][1]
-                mini_grid[row][col] = block.get_color()
+                mini_grid[row][col] = Square(block.get_color(), "BLOCK")
         for row in range(4):
             for col in range(4):
-                color = mini_grid[row][col]
+                color = mini_grid[row][col].get_color()
                 rect = pg.Rect(c.SQUARE * col + xpos + c.SQUARE_MARGIN,
                                c.SQUARE * row + ypos + c.SQUARE_MARGIN,
                                 c.SQUARE_SIZE, c.SQUARE_SIZE)
