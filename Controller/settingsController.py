@@ -34,7 +34,6 @@ class SettingsController:
     def increase_music_volume (self):
         if self.sd.get_music_vol() < 100:
             self.sd.set_music_vol(self.sd.get_music_vol() + 10)
-            print(self.sd.music_vol)
             pg.mixer.music.set_volume(self.sd.get_music_vol() * 0.01)
 
     def decrease_music_volume (self):

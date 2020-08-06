@@ -23,6 +23,15 @@ class Block:
     def get_type (self):
         return self.type
 
+    def set_type (self, type):
+        self.type = type
+
+    def get_pos (self):
+        return self.curr_pos
+
+    def set_pos (self, pos):
+        self.curr_pos = pos
+
     def get_color (self):
         return self.color
 
