@@ -10,7 +10,6 @@ class SettingsController:
         self.prev_signal = prev_signal
         self.sv = SettingsView()
 
-    # TODO
     def settings_event_listener (self):
         while self.curr_signal == "settings":
             pg.time.Clock().tick(c.FPS)

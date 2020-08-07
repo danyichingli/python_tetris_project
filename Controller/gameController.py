@@ -3,17 +3,20 @@ import constants as c
 import random as rand
 from View.gameView import GameView
 from Controller.pauseController import PauseController
-from block import Block
-from blockType import BlockType as bt
-from square import Square
+from BlockStuff.block import Block
+from BlockStuff.blockType import BlockType as bt
+from BlockStuff.square import Square
 from copy import deepcopy
 
 class GameController:
     def __init__ (self, gd):
+        # input -> GameData class
+
         self.gd = gd
         self.gv = GameView()
         self.signal = "game"
 
+    # Main game loop
     def game_loop (self):
         # Game init
         if self.gd.new_game:
@@ -47,7 +50,6 @@ class GameController:
             else: # direction == "right"
                 self.gd.curr_block.curr_pos[i] = (row, col+1)
                 new_grid[row][col+1] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
-        return new_grid
 
     # Soft drop AKA "Down movement"
     def soft_drop (self):
@@ -58,10 +60,12 @@ class GameController:
             col = self.gd.curr_block.curr_pos[i][1]
             self.gd.curr_block.curr_pos[i] = (row+1, col)
             new_grid[row+1][col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
-        return new_grid
 
-    # Hard drop
+    # Hard drop. Part of ghost block functionality. Drops block until it
+    # collides with either the bottom or another block.
     def hard_drop (self, block):
+        # input:
+        # block -> Block Class
         new_grid = self.gd.grid
         while not self.block_collision_v(block):
             self.block_erase(block)
@@ -73,10 +77,12 @@ class GameController:
             row = block.curr_pos[i][0]
             col = block.curr_pos[i][1]
             new_grid[row][col] = Square(block.get_color(), block.get_type())
-        return new_grid
 
     # Follows super rotation system. If it collides, then don't rotate.
     def rotate (self, direction):
+        # input:
+        # direction -> str
+
         # O-block doesn't need to rotate
         if self.gd.curr_block.rotation_states == None:
             return self.gd.grid
@@ -137,9 +143,11 @@ class GameController:
                     self.gd.curr_block.curr_pos[i] = (next_row, next_col)
                     new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
                 self.gd.curr_block.set_curr_state(next_state)
-            return new_grid
 
     """Automatic Changes"""
+
+    # Loads the next block. If it overlaps with a block type square then player
+    # returns to menu.
     def next_block_load (self):
         self.next_block_generate()
 
@@ -148,6 +156,9 @@ class GameController:
             self.signal = "main_menu"
             return
 
+    # Generates the next block as current block and a new random block as next
+    # block. If there is no next block, current block is generated as a new
+    # random block.
     def next_block_generate (self):
         block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
         # Current block
@@ -159,6 +170,9 @@ class GameController:
         # Next block
         self.gd.set_next_block(Block(rand.choice(block_list), bt.BLOCK).clone())
 
+    # Ghost block is generated as a clone of the current block with same
+    # attributes except for its color and type. It will immediately hard drop to
+    # act as a predictor for the current block's landing.
     def ghost_block_generate (self):
         curr_block = self.gd.curr_block
         if self.gd.ghost_block:
@@ -173,6 +187,8 @@ class GameController:
                 col = curr_block.curr_pos[i][1]
                 self.gd.grid[row][col] = Square(curr_block.get_color(), bt.BLOCK)
 
+    # Loads the hold block. If it overlaps with a block type square then player
+    # returns to menu.
     def hold_block_load (self):
         self.hold_block_generate()
 
@@ -180,6 +196,9 @@ class GameController:
         if self.block_overlap():
             self.gd.running = False
 
+    # Generates the hold block as current block and current block as hold block.
+    # If there is no hold block, current block is still generated as current
+    # block but current block is now next block.
     def hold_block_generate (self):
         # First time holding a block
         if self.gd.hold_block == None:
@@ -210,6 +229,10 @@ class GameController:
 
     # Allows a block leaning against a wall to rotate when it should not
     def wall_kick (self, wall, diff):
+        # input:
+        # wall -> str
+        # diff, curr_state -> int
+
         if wall == "left":
             self.move("right")
             if self.block_collision_r(diff):
@@ -221,6 +244,9 @@ class GameController:
 
     # I-block is a unique case for wall kicking
     def wall_kick_i (self, wall, diff, curr_state):
+        # input:
+        # wall -> str
+        # diff, curr_state -> int
         if wall == "left":
             if curr_state == 3:
                 self.wall_kick(wall, diff)
@@ -242,6 +268,8 @@ class GameController:
 
     # Scoring based on original Nintendo scoring system
     def scoring (self, lines):
+        # input:
+        # lines -> int
         n = self.gd.get_level()
         if lines == 1:
             self.gd.set_score(40 * (n + 1))
@@ -252,7 +280,7 @@ class GameController:
         elif lines == 4:
             self.gd.set_score(1200 * (n + 1))
 
-    # Check if row(s) on grid is filled up
+    # Check if row(s) on grid is filled up with block type squares
     def check_line_clear (self):
         clear_counter = 0
         for i, row in enumerate(self.gd.grid):
@@ -265,8 +293,11 @@ class GameController:
             self.gd.set_level(self.gd.get_level() + 1)
             self.gd.set_lines_cleared(self.gd.get_lines_cleared() % 10)
 
-    # Remove filled up line
+    # Remove row of block squares and replace with an empty row at the top
     def remove_line (self, row_index):
+        # input:
+        # row_index -> int
+
         del self.gd.grid[row_index]
         self.gd.grid.insert(0, [Square(c.GREY, bt.EMPTY)] * c.COLUMN_COUNT)
 
@@ -311,6 +342,9 @@ class GameController:
                     self.signal = "quit"
         self.block_fall()
 
+    # Update the game to keep it going. Most of the actions keep track of the
+    # current block's changes. If it's dropped then check if there's any lines
+    # to be cleared and then change the current block.
     def update (self):
         self.game_event_listener()
         if self.gd.curr_block.dropped:
@@ -385,7 +419,8 @@ class GameController:
                 new_grid[row][col] = Square(c.GREY, bt.EMPTY)
         return new_grid
 
-    # Difference in positions of squares to get from a,b,c,d to a',b',c',d'
+    # Difference in positions of squares to get from a,b,c,d to a',b',c',d'.
+    # Used for rotate method.
     def find_diff (self, direction, curr_points, next_points):
         result = []
         for i in range(4):

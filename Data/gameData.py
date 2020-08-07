@@ -1,7 +1,7 @@
 import pygame as pg
 import constants as c
-from block import Block
-from square import Square
+from BlockStuff.block import Block
+from BlockStuff.square import Square
 
 class GameData:
     def __init__ (self):

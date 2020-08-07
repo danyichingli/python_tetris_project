@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 import constants as c
 from View.baseView import BaseView
-from square import Square
+from BlockStuff.square import Square
 
 class GameView(BaseView):
     def draw_grid (self, gd):
