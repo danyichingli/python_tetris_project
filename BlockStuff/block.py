@@ -4,8 +4,9 @@ from copy import deepcopy
 
 class Block:
 
-    def __init__ (self, template):
+    def __init__ (self, template, type):
         # 'O', 'I', 'L', 'J', 'T', 'S', 'Z'
+        self.type               = type
         self.template           = template
         self.shape              = c.SHAPES[self.template]
         # Positions on the grid
@@ -19,8 +20,23 @@ class Block:
         # If dropped, then use of this block is done
         self.dropped            = False
 
+    def get_type (self):
+        return self.type
+
+    def set_type (self, type):
+        self.type = type
+
+    def get_pos (self):
+        return self.curr_pos
+
+    def set_pos (self, pos):
+        self.curr_pos = pos
+
     def get_color (self):
         return self.color
+
+    def set_color (self, color):
+        self.color = color
 
     def get_rotation_states (self):
         return self.rotation_states
@@ -32,5 +48,5 @@ class Block:
         self.curr_state = new_state
 
     def clone (self):
-        new_block = deepcopy(Block(self.template))
+        new_block = deepcopy(Block(self.template, self.type))
         return new_block

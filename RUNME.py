@@ -1,8 +1,8 @@
 import pygame as pg
-from mainMenu import MainMenu
-from game import Game
-from pause import Pause
-from settings import Settings
+from Objects.mainMenu import MainMenu
+from Objects.game import Game
+from Objects.pause import Pause
+from Objects.settings import Settings
 from Data.gameData import GameData
 from Data.settingsData import SettingsData
 from Controller.mainMenuController import MainMenuController
@@ -46,7 +46,8 @@ def execute ():
             curr_signal = main_menu.run()
             prev_signal = "main_menu"
         if curr_signal == "game":
-            pg.mixer.music.play(-1)
+            if prev_signal == "main_menu":
+                pg.mixer.music.play(-1)
             curr_signal = game.run(gd)
         if curr_signal == "pause":
             curr_signal = pause.run(gd)
