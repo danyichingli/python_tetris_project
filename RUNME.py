@@ -27,7 +27,7 @@ def execute ():
     # Initialize Data
     gd = GameData()
     sd = SettingsData(100)
-    curr_signal = "main_menu"
+    curr_signal = "pentris"
     prev_signal = ""
     # Initialize Objects
     main_menu = MainMenu()
@@ -45,9 +45,12 @@ def execute ():
             pg.mixer.music.rewind()
             curr_signal = main_menu.run()
             prev_signal = "main_menu"
-        if curr_signal == "game":
+        if curr_signal == "tetris" or curr_signal == "pentris":
             if prev_signal == "main_menu":
                 pg.mixer.music.play(-1)
+
+            gd.set_signal(curr_signal)
+
             curr_signal = game.run(gd)
         if curr_signal == "pause":
             curr_signal = pause.run(gd)

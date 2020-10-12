@@ -14,7 +14,7 @@ class GameController:
 
         self.gd = gd
         self.gv = GameView()
-        self.signal = "game"
+        self.signal = gd.get_signal()
 
     # Main game loop
     def game_loop (self):
@@ -23,7 +23,7 @@ class GameController:
             self.gd.grid_generate()
             self.next_block_load()
             self.gd.new_game = False
-        while self.signal == "game":
+        while self.signal == "tetris" or self.signal == "pentris":
             # Pygame loop speed
             time = self.gd.clock.tick(c.FPS)
             # Update
@@ -41,7 +41,7 @@ class GameController:
         # Erase the block's current position, fill in new position to left/right
         new_grid = self.gd.get_grid()
         self.block_erase(self.gd.curr_block)
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             row = self.gd.curr_block.curr_pos[i][0]
             col = self.gd.curr_block.curr_pos[i][1]
             if direction == "left":
@@ -55,7 +55,7 @@ class GameController:
     def soft_drop (self):
         new_grid = self.gd.grid
         self.block_erase(self.gd.curr_block)
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             row = self.gd.curr_block.curr_pos[i][0]
             col = self.gd.curr_block.curr_pos[i][1]
             self.gd.curr_block.curr_pos[i] = (row+1, col)
@@ -69,11 +69,11 @@ class GameController:
         new_grid = self.gd.grid
         while not self.block_collision_v(block):
             self.block_erase(block)
-            for i in range(4):
+            for i in range(self.gd.curr_block.num_squares):
                 row = block.curr_pos[i][0]
                 col = block.curr_pos[i][1]
                 block.curr_pos[i] = (row+1, col)
-        for i in range(4):
+        for i in range(block.num_squares):
             row = block.curr_pos[i][0]
             col = block.curr_pos[i][1]
             new_grid[row][col] = Square(block.get_color(), block.get_type())
@@ -135,7 +135,7 @@ class GameController:
             if not self.block_collision_r(diff):
                 # Rotation
                 self.block_erase(self.gd.curr_block)
-                for i in range(4):
+                for i in range(self.gd.curr_block.num_squares):
                     row = self.gd.curr_block.curr_pos[i][0]
                     col = self.gd.curr_block.curr_pos[i][1]
                     next_row = row + diff[i][0]
@@ -160,9 +160,14 @@ class GameController:
     # block. If there is no next block, current block is generated as a new
     # random block.
     def next_block_generate (self):
-        block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
+        block_list = []
+        if self.signal == "tetris":
+            block_list = ['O', 'I', 'L', 'J', 'T', 'S', 'Z']
+        elif self.signal == "pentris":
+            block_list = ['pF','p7','pI','pL','pJ','pP','pQ','pN','p4',
+                          'pV','pT','pU','pW','pX','pB','pD','pZ','pS']
         # Current block
-        if self.gd.curr_block == None:
+        if not self.gd.curr_block:
             self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
         else:
             self.gd.set_curr_block(Block(self.gd.next_block.template, bt.BLOCK).clone())
@@ -355,7 +360,7 @@ class GameController:
     # Check block collision horizontally
     def block_collision_h (self, side):
         temp_grid = self.gd.get_grid()
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             pos = self.gd.curr_block.curr_pos
             row = pos[i][0]
             col = pos[i][1]
@@ -372,7 +377,7 @@ class GameController:
     # Check block collision verically, associated with ghost block behavior
     def block_collision_v (self, block):
         temp_grid = self.gd.get_grid()
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             pos = block.curr_pos
             row = pos[i][0]
             col = pos[i][1]
@@ -385,7 +390,7 @@ class GameController:
     # Check block collision before rotation
     def block_collision_r (self, diff):
         temp_grid = self.gd.get_grid()
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             pos = self.gd.curr_block.curr_pos
             row = pos[i][0] + diff[i][0]
             col = pos[i][1] + diff[i][1]
@@ -409,7 +414,7 @@ class GameController:
     # Erase block from grid to avoid confusion when making changes
     def block_erase (self, block):
         new_grid = self.gd.grid
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             row = block.curr_pos[i][0]
             col = block.curr_pos[i][1]
             if block.get_type() == bt.GHOST:
@@ -423,7 +428,7 @@ class GameController:
     # Used for rotate method.
     def find_diff (self, direction, curr_points, next_points):
         result = []
-        for i in range(4):
+        for i in range(self.gd.curr_block.num_squares):
             curr_row = curr_points[i][0]
             curr_col = curr_points[i][1]
             next_row = next_points[i][0]

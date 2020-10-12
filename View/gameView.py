@@ -15,15 +15,21 @@ class GameView(BaseView):
                 pg.draw.rect(self.screen, color, rect)
 
     def draw_mini_grid (self, gd, block, xpos, ypos):
-        mini_grid = [[Square(c.GREY, "EMPTY") for column in range(4)] for row in range(4)]
+        mini_grid_dim = 0
+        if gd.get_signal() == "tetris":
+            mini_grid_dim = 4
+        elif gd.get_signal() == "pentris":
+            mini_grid_dim = 5
+        mini_grid = [[Square(c.GREY, "EMPTY") for column in range(mini_grid_dim)]
+                                        for row in range(mini_grid_dim)]
         if block != None:
             block_shape = block.shape
             for i in range(len(block_shape)):
                 row = block_shape[i][0]
                 col = block_shape[i][1]
                 mini_grid[row][col] = Square(block.get_color(), "BLOCK")
-        for row in range(4):
-            for col in range(4):
+        for row in range(mini_grid_dim):
+            for col in range(mini_grid_dim):
                 color = mini_grid[row][col].get_color()
                 rect = pg.Rect(c.SQUARE * col + xpos + c.SQUARE_MARGIN,
                                c.SQUARE * row + ypos + c.SQUARE_MARGIN,
