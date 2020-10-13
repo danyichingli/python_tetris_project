@@ -14,7 +14,6 @@ class Block:
         # Color based on the template of block
         self.color              = c.BLOCKS[self.template][1]
         # Values for rotation functionality
-        self.rotation_states    = c.ROTATION[self.template]
         self.curr_state         = 0
         # If dropped, then use of this block is done
         self.dropped            = False

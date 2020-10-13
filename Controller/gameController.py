@@ -7,6 +7,7 @@ from BlockStuff.block import Block
 from BlockStuff.blockType import BlockType as bt
 from BlockStuff.square import Square
 from copy import deepcopy
+from numpy import rot90, array
 
 class GameController:
     def __init__ (self, gd):
@@ -79,7 +80,7 @@ class GameController:
             new_grid[row][col] = Square(block.get_color(), block.get_type())
 
     # Follows super rotation system. If it collides, then don't rotate.
-    def rotate (self, direction):
+    def rotateOLD (self, direction):
         # input:
         # direction -> str
 
@@ -144,6 +145,63 @@ class GameController:
                     new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
                 self.gd.curr_block.set_curr_state(next_state)
 
+    def rotate (self, direction):
+        if self.gd.curr_block.template == "I" or self.gd.curr_block.template == "pX":
+            return
+        # Record everything before the rotation
+        num_squares = self.gd.curr_block.num_squares
+        temp = [[-1] * num_squares for i in range(num_squares)]
+        curr_points = []
+        next_points = [-1] * num_squares
+        curr_state = self.gd.curr_block.get_curr_state()
+        diff = []
+        leftmost = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+        rightmost = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+        new_grid = self.gd.get_grid()
+
+        for num, (row, col) in enumerate(self.gd.curr_block.shape):
+            temp[row][col] = num
+            curr_points.append((row, col))
+
+        print(array(temp))
+
+        # Rotate the shape
+        if direction == "clockwise":
+            if curr_state == 3:
+                self.gd.curr_block.set_curr_state(0)
+            else:
+                self.gd.curr_block.set_curr_state(curr_state + 1)
+            temp = rot90(temp, 3)
+        else:
+            if curr_state == 0:
+                self.gd.curr_block.set_curr_state(3)
+            else:
+                self.gd.curr_block.set_curr_state(curr_state - 1)
+            temp = rot90(temp)
+        print(temp)
+        # Get the position of the points after rotation
+        for i, row in enumerate(temp):
+            for j, num in enumerate(row):
+                if num > -1:
+                    next_points[num] = (i, j)
+        if direction == "clockwise":
+            diff = self.find_diff(direction, curr_points, next_points)
+        else:
+            diff = self.find_diff(direction, next_points, curr_points)
+
+        if not self.block_collision_r(diff):
+            # Rotation
+            self.block_erase(self.gd.curr_block)
+            for i in range(self.gd.curr_block.num_squares):
+                row = self.gd.curr_block.curr_pos[i][0]
+                col = self.gd.curr_block.curr_pos[i][1]
+                next_row = row + diff[i][0]
+                next_col = col + diff[i][1]
+                self.gd.curr_block.curr_pos[i] = (next_row, next_col)
+                new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+            self.gd.curr_block.shape = next_points
+
+
     """Automatic Changes"""
 
     # Loads the next block. If it overlaps with a block type square then player
@@ -168,7 +226,8 @@ class GameController:
                           'pV','pT','pU','pW','pX','pB','pD','pZ','pS']
         # Current block
         if not self.gd.curr_block:
-            self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
+            #self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
+            self.gd.set_curr_block(Block('pU', bt.BLOCK).clone())
         else:
             self.gd.set_curr_block(Block(self.gd.next_block.template, bt.BLOCK).clone())
         self.ghost_block_generate()
@@ -389,12 +448,16 @@ class GameController:
 
     # Check block collision before rotation
     def block_collision_r (self, diff):
+        if self.gd.signal == "tetris":
+            col_limit = 9
+        elif self.gd.signal == "pentris":
+            col_limit = 11
         temp_grid = self.gd.get_grid()
         for i in range(self.gd.curr_block.num_squares):
             pos = self.gd.curr_block.curr_pos
             row = pos[i][0] + diff[i][0]
             col = pos[i][1] + diff[i][1]
-            if row < 0 or row > 19 or col < 0 or col > 9:
+            if row < 0 or row > 19 or col < 0 or col > col_limit:
                 return True
             if (row,col) not in pos and temp_grid[row][col].get_type() == bt.BLOCK:
                 return True
