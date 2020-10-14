@@ -6,8 +6,8 @@ from BlockStuff.square import Square
 
 class GameView(BaseView):
     def draw_grid (self, gd):
-        for row in range(c.ROW_COUNT):
-            for col in range(c.COLUMN_COUNT):
+        for row in range(gd.row_count):
+            for col in range(gd.col_count):
                 color = gd.grid[row][col].get_color()
                 rect = pg.Rect(c.SQUARE * col + (c.SIDE_SCREEN/2) + c.SQUARE_MARGIN,
                                c.SQUARE * row + c.HEADER/2 + c.SQUARE_MARGIN,

@@ -20,6 +20,13 @@ class GameController:
     # Main game loop
     def game_loop (self):
         # Game init
+
+        # Column count dependent on game type
+        if self.signal == "tetris":
+            self.gd.col_count = 10
+        elif self.signal == "pentris":
+            self.gd.col_count = 12
+
         if self.gd.new_game:
             self.gd.grid_generate()
             self.next_block_load()
@@ -80,114 +87,68 @@ class GameController:
             new_grid[row][col] = Square(block.get_color(), block.get_type())
 
     # Follows super rotation system. If it collides, then don't rotate.
-    def rotateOLD (self, direction):
-        # input:
-        # direction -> str
-
-        # O-block doesn't need to rotate
-        if self.gd.curr_block.rotation_states == None:
-            return self.gd.grid
-        # I-block, S-block, Z-block, L-block, J-block, T-block rotates 4 ways
-        else:
-            new_grid = self.gd.get_grid()
-            curr_state = self.gd.curr_block.get_curr_state()
-            next_state = curr_state
-            diff = []
-            if direction == "clockwise":
-                if curr_state == 3:
-                    next_state = 0
-                else:
-                    next_state += 1
-            else: # direction == "counter clockwise"
-                if curr_state == 0:
-                    next_state = 3
-                else:
-                    next_state -= 1
-            curr_points = self.gd.curr_block.get_rotation_states()[curr_state]
-            next_points = self.gd.curr_block.get_rotation_states()[next_state]
-            # Find the difference to transition from current to next state
-            if direction == "clockwise":
-                diff = self.find_diff(direction, curr_points, next_points)
-            else: # direction == "counter clockwise"
-                diff = self.find_diff(direction, next_points, curr_points)
-            # Check collision before committing rotation
-            leftmost = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
-            rightmost = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
-
-            # Wall kick if:
-            # I-block, current state is 1 or 3, and near either wall
-            # Current state is 1 and against left wall
-            # Current state is 3 and against right wall
-            if self.gd.curr_block.template == 'I':
-                if ((curr_state == 1 or curr_state == 3) and leftmost <= 1 and
-                not self.block_collision_h("right")):
-                    self.wall_kick_i("left", diff, curr_state)
-                elif ((curr_state == 1 or curr_state == 3) and rightmost >= 8 and
-                not self.block_collision_h("left")):
-                    self.wall_kick_i("right", diff, curr_state)
-            else:
-                if (curr_state == 1 and leftmost == 0 and
-                not self.block_collision_h("right")):
-                    self.wall_kick("left", diff)
-                elif (curr_state == 3 and rightmost == 9 and
-                not self.block_collision_h("left")):
-                    self.wall_kick("right", diff)
-
-            if not self.block_collision_r(diff):
-                # Rotation
-                self.block_erase(self.gd.curr_block)
-                for i in range(self.gd.curr_block.num_squares):
-                    row = self.gd.curr_block.curr_pos[i][0]
-                    col = self.gd.curr_block.curr_pos[i][1]
-                    next_row = row + diff[i][0]
-                    next_col = col + diff[i][1]
-                    self.gd.curr_block.curr_pos[i] = (next_row, next_col)
-                    new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
-                self.gd.curr_block.set_curr_state(next_state)
-
-    def rotate (self, direction):
-        if self.gd.curr_block.template == "I" or self.gd.curr_block.template == "pX":
+    def rotate(self, direction):
+        curr_template = self.gd.curr_block.template
+        if curr_template == "I" or curr_template == "pX":
             return
-        # Record everything before the rotation
         num_squares = self.gd.curr_block.num_squares
-        temp = [[-1] * num_squares for i in range(num_squares)]
-        curr_points = []
-        next_points = [-1] * num_squares
-        curr_state = self.gd.curr_block.get_curr_state()
-        diff = []
-        leftmost = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
-        rightmost = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
         new_grid = self.gd.get_grid()
+        curr_points = self.gd.curr_block.shape
+        next_points = [0] * num_squares
+        shift = num_squares - 1
+        curr_state = self.gd.curr_block.get_curr_state()
+        next_state = curr_state
+        col_limit = self.gd.col_count
 
-        for num, (row, col) in enumerate(self.gd.curr_block.shape):
-            temp[row][col] = num
-            curr_points.append((row, col))
-
-        print(array(temp))
-
-        # Rotate the shape
         if direction == "clockwise":
             if curr_state == 3:
-                self.gd.curr_block.set_curr_state(0)
+                next_state = 0
             else:
-                self.gd.curr_block.set_curr_state(curr_state + 1)
-            temp = rot90(temp, 3)
+                next_state += 1
         else:
             if curr_state == 0:
-                self.gd.curr_block.set_curr_state(3)
+                next_state = 3
             else:
-                self.gd.curr_block.set_curr_state(curr_state - 1)
-            temp = rot90(temp)
-        print(temp)
-        # Get the position of the points after rotation
-        for i, row in enumerate(temp):
-            for j, num in enumerate(row):
-                if num > -1:
-                    next_points[num] = (i, j)
-        if direction == "clockwise":
-            diff = self.find_diff(direction, curr_points, next_points)
+                next_state -= 1
+
+        for i in range(self.gd.curr_block.num_squares):
+            row = curr_points[i][0]
+            col = curr_points[i][1]
+            if direction == "clockwise":
+                next_row = col
+                next_col = (row * -1) + shift
+            else:
+                next_row = (col * -1) + shift
+                next_col = row
+            next_points[i] = (next_row, next_col)
+
+        diff = [(next_points[i][0] - curr_points[i][0],
+        next_points[i][1] - curr_points[i][1]) for i in range(num_squares)]
+
+        # Check collision before committing rotation
+        leftmost = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+        rightmost = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+
+        # Wall kick if:
+        # I-block, current state is 1 or 3, and near either wall
+        # Current state is 1 and against left wall
+        # Current state is 3 and against right wall
+        if curr_template == 'I':
+            if ((curr_state == 1 or curr_state == 3) and leftmost <= 1 and
+            not self.block_collision_h("right")):
+                self.wall_kick_i("left", diff, curr_state)
+            elif ((curr_state == 1 or curr_state == 3) and rightmost >= col_limit-2 and
+            not self.block_collision_h("left")):
+                self.wall_kick_i("right", diff, curr_state)
         else:
-            diff = self.find_diff(direction, next_points, curr_points)
+            if ((curr_state == 1 or curr_state == 3) and
+            leftmost == 0 and not self.block_collision_h("right")
+            and self.block_collision_r(diff)):
+                self.wall_kick("left", diff)
+            elif ((curr_state == 1  or curr_state == 3) and
+            rightmost == col_limit-1 and not self.block_collision_h("left")
+            and self.block_collision_r(diff)):
+                self.wall_kick("right", diff)
 
         if not self.block_collision_r(diff):
             # Rotation
@@ -200,6 +161,7 @@ class GameController:
                 self.gd.curr_block.curr_pos[i] = (next_row, next_col)
                 new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
             self.gd.curr_block.shape = next_points
+            self.gd.curr_block.set_curr_state(next_state)
 
 
     """Automatic Changes"""
@@ -226,8 +188,7 @@ class GameController:
                           'pV','pT','pU','pW','pX','pB','pD','pZ','pS']
         # Current block
         if not self.gd.curr_block:
-            #self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
-            self.gd.set_curr_block(Block('pU', bt.BLOCK).clone())
+            self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
         else:
             self.gd.set_curr_block(Block(self.gd.next_block.template, bt.BLOCK).clone())
         self.ghost_block_generate()
@@ -296,15 +257,22 @@ class GameController:
         # input:
         # wall -> str
         # diff, curr_state -> int
+        counter = 0
+        direction = ""
+        reverse = ""
 
         if wall == "left":
-            self.move("right")
-            if self.block_collision_r(diff):
-                self.move("left")
+            direction = "right"
+            reverse = "left"
         else:
-            self.move("left")
-            if self.block_collision_r(diff):
-                self.move("right")
+            direction = "left"
+            reverse = "right"
+        while self.block_collision_r(diff):
+            self.move(direction)
+            counter += 1
+        if self.block_collision_r(diff):
+            for i in range(counter):
+                self.move(reverse)
 
     # I-block is a unique case for wall kicking
     def wall_kick_i (self, wall, diff, curr_state):
@@ -363,7 +331,7 @@ class GameController:
         # row_index -> int
 
         del self.gd.grid[row_index]
-        self.gd.grid.insert(0, [Square(c.GREY, bt.EMPTY)] * c.COLUMN_COUNT)
+        self.gd.grid.insert(0, [Square(c.GREY, bt.EMPTY)] * self.gd.col_count)
 
     # Listen to events
     def game_event_listener (self):
@@ -420,6 +388,7 @@ class GameController:
     def block_collision_h (self, side):
         temp_grid = self.gd.get_grid()
         for i in range(self.gd.curr_block.num_squares):
+            col_limit = self.gd.col_count - 1
             pos = self.gd.curr_block.curr_pos
             row = pos[i][0]
             col = pos[i][1]
@@ -428,7 +397,7 @@ class GameController:
                 and temp_grid[row][col-1].get_type() == bt.BLOCK)):
                     return True
             else: # if side == "right"
-                if (col == 9 or ((row,col+1) not in pos
+                if (col == col_limit or ((row,col+1) not in pos
                 and temp_grid[row][col+1].get_type() == bt.BLOCK)):
                     return True
         return False
@@ -486,18 +455,3 @@ class GameController:
             else:
                 new_grid[row][col] = Square(c.GREY, bt.EMPTY)
         return new_grid
-
-    # Difference in positions of squares to get from a,b,c,d to a',b',c',d'.
-    # Used for rotate method.
-    def find_diff (self, direction, curr_points, next_points):
-        result = []
-        for i in range(self.gd.curr_block.num_squares):
-            curr_row = curr_points[i][0]
-            curr_col = curr_points[i][1]
-            next_row = next_points[i][0]
-            next_col = next_points[i][1]
-            if direction == "clockwise":
-                result.append((next_row - curr_row, next_col - curr_col))
-            else:
-                result.append((curr_row - next_row, curr_col - next_col))
-        return result

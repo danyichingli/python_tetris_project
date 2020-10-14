@@ -18,7 +18,7 @@ def game_init ():
     pg.display.set_icon(icon)
     # Text init
     pg.font.init()
-    # Mixer init
+    # Mixer initxx
     pg.mixer.music.load('Music/Tetris.mp3')
     pg.mixer.music.set_volume(1)
 

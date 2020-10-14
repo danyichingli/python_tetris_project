@@ -5,6 +5,8 @@ from BlockStuff.square import Square
 
 class GameData:
     def __init__ (self):
+        self.row_count = 20
+        self.col_count = 0
         self.new_game = True
         self.curr_block = None
         self.next_block = None
@@ -88,6 +90,6 @@ class GameData:
 
     def grid_generate (self):
         # Create a grid with color other than black.
-        grid = [[Square(c.GREY, "EMPTY") for column in range(c.COLUMN_COUNT)]
-                    for row in range(c.ROW_COUNT)]
+        grid = [[Square(c.GREY, "EMPTY") for column in range(self.col_count)]
+                    for row in range(self.row_count)]
         self.set_grid(grid)
