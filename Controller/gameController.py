@@ -54,20 +54,21 @@ class GameController:
             col = self.gd.curr_block.curr_pos[i][1]
             if direction == "left":
                 self.gd.curr_block.curr_pos[i] = (row, col-1)
-                new_grid[row][col-1] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+                new_grid[row][col-1] = Square(self.gd.curr_block.get_color(), bt.PLAYER)
             else: # direction == "right"
                 self.gd.curr_block.curr_pos[i] = (row, col+1)
-                new_grid[row][col+1] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+                new_grid[row][col+1] = Square(self.gd.curr_block.get_color(), bt.PLAYER)
 
     # Soft drop AKA "Down movement"
     def soft_drop (self):
         new_grid = self.gd.grid
+        type = self.gd.curr_block.get_type()
         self.block_erase(self.gd.curr_block)
         for i in range(self.gd.curr_block.num_squares):
             row = self.gd.curr_block.curr_pos[i][0]
             col = self.gd.curr_block.curr_pos[i][1]
             self.gd.curr_block.curr_pos[i] = (row+1, col)
-            new_grid[row+1][col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+            new_grid[row+1][col] = Square(self.gd.curr_block.get_color(), type)
 
     # Hard drop. Part of ghost block functionality. Drops block until it
     # collides with either the bottom or another block.
@@ -75,6 +76,8 @@ class GameController:
         # input:
         # block -> Block Class
         new_grid = self.gd.grid
+        if block == self.gd.curr_block:
+            block.set_type(bt.BLOCK)
         while not self.block_collision_v(block):
             self.block_erase(block)
             for i in range(self.gd.curr_block.num_squares):
@@ -102,10 +105,10 @@ class GameController:
         col_limit = self.gd.col_count
 
         # Shift the block after rotating about the 'origin'
-        leftmost    = min(self.gd.curr_block.shape,key=lambda x:x[1])[1]
-        rightmost   = max(self.gd.curr_block.shape,key=lambda x:x[1])[1]
         # If the num of squares is even, we need to accomodate some blocks' centers
         if self.gd.curr_block.num_squares % 2 == 0:
+            leftmost    = min(self.gd.curr_block.shape,key=lambda x:x[1])[1]
+            rightmost   = max(self.gd.curr_block.shape,key=lambda x:x[1])[1]
             topmost     = min(self.gd.curr_block.shape,key=lambda x:x[0])[0]
             botmost     = max(self.gd.curr_block.shape,key=lambda x:x[0])[0]
             shift = max(rightmost - leftmost, botmost - topmost)
@@ -130,6 +133,8 @@ class GameController:
         next_points[i][1] - curr_points[i][1]) for i in range(num_squares)]
 
         # Check wall kick before committing rotation
+        leftmost    = min(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
+        rightmost   = max(self.gd.curr_block.curr_pos,key=lambda x:x[1])[1]
         if (leftmost == 0 and not self.block_collision_h("right")
         and self.block_collision_r(diff)):
             self.wall_kick("left", diff)
@@ -147,7 +152,7 @@ class GameController:
                 next_row = row + diff[i][0]
                 next_col = col + diff[i][1]
                 self.gd.curr_block.curr_pos[i] = (next_row, next_col)
-                new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+                new_grid[next_row][next_col] = Square(self.gd.curr_block.get_color(), bt.PLAYER)
             # Update the shape that will be represented in the N x N matrix next time
             self.gd.curr_block.shape = next_points
 
@@ -176,9 +181,10 @@ class GameController:
                           'pV','pT','pU','pW','pX','pB','pD','pZ','pS']
         # Current block
         if not self.gd.curr_block:
-            self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
+            #self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
+            self.gd.set_curr_block(Block('pU', bt.PLAYER).clone())
         else:
-            self.gd.set_curr_block(Block(self.gd.next_block.template, bt.BLOCK).clone())
+            self.gd.set_curr_block(Block(self.gd.next_block.template, bt.PLAYER).clone())
         self.ghost_block_generate()
         # Next block
         self.gd.set_next_block(Block(rand.choice(block_list), bt.BLOCK).clone())
@@ -198,7 +204,7 @@ class GameController:
             for i in range(self.gd.curr_block.num_squares):
                 row = curr_block.curr_pos[i][0]
                 col = curr_block.curr_pos[i][1]
-                self.gd.grid[row][col] = Square(curr_block.get_color(), bt.BLOCK)
+                self.gd.grid[row][col] = Square(curr_block.get_color(), bt.PLAYER)
 
     # Loads the hold block. If it overlaps with a block type square then player
     # returns to menu.
@@ -252,6 +258,7 @@ class GameController:
         else:
             direction = "left"
             undo = "right"
+
         for i in range(floor(self.gd.curr_block.num_squares / 2)):
             if not self.block_collision_wk(diff):
                 break
@@ -376,6 +383,7 @@ class GameController:
             col = pos[i][1]
             if (row == 19 or ((row+1,col) not in pos
             and temp_grid[row+1][col].get_type() == bt.BLOCK)):
+                self.gd.curr_block.set_type(bt.BLOCK)
                 block.dropped = True
                 return True
         return False
@@ -408,10 +416,10 @@ class GameController:
     def block_overlap (self):
         temp_grid = self.gd.get_grid()
         for pos in self.gd.curr_block.start_pos:
-            if (temp_grid[pos[0]][pos[1]].get_type() == bt.BLOCK):
+            if (temp_grid[pos[0]][pos[1]].get_type() == bt.PLAYER):
                 print("Game Over!")
                 return True
-            temp_grid[pos[0]][pos[1]] = Square(self.gd.curr_block.get_color(), bt.BLOCK)
+            temp_grid[pos[0]][pos[1]] = Square(self.gd.curr_block.get_color(), bt.PLAYER)
         return False
 
     """Miscellaneous"""
@@ -422,7 +430,8 @@ class GameController:
             row = block.curr_pos[i][0]
             col = block.curr_pos[i][1]
             if block.get_type() == bt.GHOST:
-                if new_grid[row][col].get_type() != bt.BLOCK:
+                if (new_grid[row][col].get_type() != bt.BLOCK
+                and new_grid[row][col].get_type() != bt.PLAYER):
                     new_grid[row][col] = Square(c.GREY, bt.EMPTY)
             else:
                 new_grid[row][col] = Square(c.GREY, bt.EMPTY)
