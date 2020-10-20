@@ -181,8 +181,7 @@ class GameController:
                           'pV','pT','pU','pW','pX','pB','pD','pZ','pS']
         # Current block
         if not self.gd.curr_block:
-            #self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
-            self.gd.set_curr_block(Block('pU', bt.PLAYER).clone())
+            self.gd.set_curr_block(Block(rand.choice(block_list), bt.BLOCK).clone())
         else:
             self.gd.set_curr_block(Block(self.gd.next_block.template, bt.PLAYER).clone())
         self.ghost_block_generate()
@@ -316,11 +315,11 @@ class GameController:
                 self.signal = "quit"
             elif event.type == pg.KEYDOWN:
                 # Move left (key press)
-                if event.key == pg.K_LEFT and not self.block_collision_h("left"):
+                if event.key in [pg.K_LEFT, pg.K_a] and not self.block_collision_h("left"):
                     self.move("left")
                     self.ghost_block_generate()
                 # Move right (key press)
-                elif event.key == pg.K_RIGHT and not self.block_collision_h("right"):
+                elif event.key in [pg.K_RIGHT, pg.K_d] and not self.block_collision_h("right"):
                     self.move("right")
                     self.ghost_block_generate()
                 # Hard drop (key press)

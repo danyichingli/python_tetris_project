@@ -15,10 +15,10 @@ class MainMenuView (BaseView):
         self.draw_label(thisfont, "TETRIS", c.WIDTH/2 - tetris_text_width,
                                 c.HEIGHT/4)
         # Start button
-        start_game_button = Button(self.screen, "Start_Game","Start_Game_H")
-        start_game_pos = start_game_button.button_center(self.screen, 0, 175)
-        self.draw_button(self.screen, start_game_button.button,
-                            start_game_button.button_h, start_game_pos)
+        mode_button = Button(self.screen, "Start_Game","Start_Game_H")
+        mode_pos = mode_button.button_center(self.screen, 0, 175)
+        self.draw_button(self.screen, mode_button.button,
+                            mode_button.button_h, mode_pos)
         # Settings button
         settings_button = Button(self.screen, "Settings","Settings_H")
         settings_pos = settings_button.button_center(self.screen, 0, 250)
@@ -30,4 +30,4 @@ class MainMenuView (BaseView):
         self.draw_button(self.screen, quit_button.button, quit_button.button_h,
                         quit_pos)
 
-        return start_game_pos, settings_pos, quit_pos
+        return mode_pos, settings_pos, quit_pos
