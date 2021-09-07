@@ -9,7 +9,6 @@ class PauseController:
         self.signal = "pause"
 
     def pause_event_listener (self):
-        # TODO: Find a way to switch in and out of setttings
         while self.signal == "pause":
             pg.time.Clock().tick(c.FPS)
             self.pv.screen.fill(c.BLACK)
@@ -19,7 +18,7 @@ class PauseController:
                     self.signal = "quit"
                 elif event.type == pg.KEYDOWN:
                     if event.key == pg.K_p:
-                        self.signal = "game"
+                        self.signal = self.gd.signal
                     elif event.key == pg.K_ESCAPE:
                         self.signal = "quit"
                 elif event.type == pg.MOUSEBUTTONDOWN:
